@@ -56,7 +56,7 @@ If you want to skip the prompts, you can pass the values as arguments using the 
 
 ### Block config
 
-- `-s $LEVEL, --severity $LEVEL`: Block severity level (`silence`, `suspend`, `noop`)
+- `-s $LEVEL, --severity $LEVEL`: Block severity level (`limit`, `suspend`, `noop`)
 - `--obfuscate`: Obfuscate domains in public listing
 - `--reject-media`: Reject media from domains (works with `limit`, `noop`)
 - `--reject-reports`: Reject reports from domains (works with `limit`,`noop`)

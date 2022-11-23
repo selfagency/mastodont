@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "description": "",
   "main": "dist/index.js",
+  "type": "module",
   "scripts": {
+    "dev": "tsc && DEBUG=* node --es-module-specifier-resolution node dist",
+    "tsc:check": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -25,6 +28,7 @@
   "homepage": "https://github.com/selfagency/mastodont#readme",
   "devDependencies": {
     "@types/node": "^18.11.9",
+    "@types/prompts": "^2.4.1",
     "@typescript-eslint/eslint-plugin": "^5.44.0",
     "@typescript-eslint/parser": "^5.44.0",
     "esbuild": "^0.15.15",
@@ -36,13 +40,15 @@
     "eslint-config-standard": "^17.0.0",
     "prettier": "^2.7.1",
     "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.1.0",
     "typescript": "^4.9.3"
   },
   "dependencies": {
     "@thi.ng/args": "^2.2.8",
     "boxen": "^7.0.0",
-    "chalk": "^5.1.2",
-    "got": "^12.5.3",
+    "consola": "^2.15.3",
+    "is-url-superb": "^6.1.0",
+    "node-fetch": "^3.3.0",
     "open": "^8.4.0",
     "ora": "^6.1.2",
     "prompts": "^2.4.2",

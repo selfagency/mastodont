@@ -21,7 +21,9 @@ esbuild
       fileloc.filelocPlugin(),
       copyFilePlugin({
         after: {
-          './dist/package.json': './package.json'
+          './dist/package.json': './package.json',
+          './dist/README.md': './README.md',
+          './dist/LICENSE.txt': './LICENSE.txt'
         }
       })
     ],

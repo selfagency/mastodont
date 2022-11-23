@@ -299,4 +299,3 @@ Requires an API access token with \`admin:read:domain_blocks\`/\`admin:write:dom
 /*! formdata-polyfill. MIT License. Jimmy Wärting <https://jimmy.warting.se/opensource> */
 /*! node-domexception. MIT License. Jimmy Wärting <https://jimmy.warting.se/opensource> */
 /*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
-//# sourceMappingURL=index.js.map

@@ -34,7 +34,7 @@ esbuild
     outdir: 'dist',
     external: ['package.json'],
     minify: true,
-    sourcemap: true,
+    sourcemap: false,
     format: 'esm',
     banner: {
       js: banner

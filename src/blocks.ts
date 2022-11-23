@@ -7,7 +7,8 @@ import { readFile } from 'fs/promises'
 const endpoint = (config: MastodontConfig) => `${config.endpoint}/api/v1/admin/domain_blocks`
 
 export const getBlocks = async (config: MastodontConfig, quiet: boolean): Promise<Block[]> => {
-  const spinner = ora('Querying instance blocks.')
+  let spinner
+  if (!quiet) spinner = ora('Querying instance blocks.')
   if (!quiet) spinner.start()
   const res = await fetch(endpoint(config), {
     headers: {

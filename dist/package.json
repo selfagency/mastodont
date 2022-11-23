@@ -1,6 +1,6 @@
 {
   "name": "mastodont",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "",
   "main": "index.js",
   "bin": "index.js",
@@ -12,7 +12,7 @@
     "lint": "eslint . --ext .ts --fix",
     "tsc:check": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "husky install"
+    "postinstall": "husky install"
   },
   "repository": {
     "type": "git",

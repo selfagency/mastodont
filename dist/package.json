@@ -2,8 +2,8 @@
   "name": "mastodont",
   "version": "0.1.4",
   "description": "",
-  "main": "dist/index.js",
-  "bin": "dist/index.js",
+  "main": "index.js",
+  "bin": "index.js",
   "type": "module",
   "scripts": {
     "build": "node esbuild.js; chmod +x dist/index.js",

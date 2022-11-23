@@ -52,7 +52,7 @@ If you want to skip the prompts, you can pass the values as arguments using the 
 
 - `-e $URL, --endpoint $URL`: Mastodon server URL
 - `-t $TOKEN, --access-token $TOKEN`: Mastodon Access Token
-- `-b $LOCATION, --blocklist $LOCATION`: Blocklist file path
+- `-b $LOCATION, --blocklist $LOCATION`: Blocklist filepath or URL
 
 ### Block config
 

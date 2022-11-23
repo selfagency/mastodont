@@ -23,6 +23,10 @@ npm install -g mastodont
 
 ## Usage
 
+```bash
+mastodont
+```
+
 Mastodont operates interactively and requires only a Mastodon instance URL, an access token with the necessary
 permissions, and a text file containing a list of domains to block. A sample blocklist is provided in the root of this
 repository.

@@ -13,7 +13,7 @@
     "tsc:check": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "husky install",
-    "publish": "npm publish dist"
+    "publish": "cd dist; npm publish"
   },
   "repository": {
     "type": "git",

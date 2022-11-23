@@ -65,7 +65,7 @@ If you want to skip the prompts, you can pass the values as arguments using the 
 ### Automation
 
 Mastodont can be used to automatically update your blocklist on a regular basis. To do so, you can use a cron job or a
-CI workflow. Examples of a cron job and a CI workflow are provided in the `examples` folder at the root of this
+CI workflow. Examples of a cron job and CI workflows are provided in the `examples` folder at the root of this
 repository.
 
 ## License

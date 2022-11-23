@@ -1,6 +1,6 @@
 {
-  "name": "@selfagency/mastodont",
-  "version": "0.1.0",
+  "name": "mastodont",
+  "version": "0.1.2",
   "description": "",
   "main": "dist/index.js",
   "bin": "dist/index.js",
@@ -8,8 +8,11 @@
   "scripts": {
     "build": "node esbuild.js; chmod +x dist/index.js",
     "dev": "tsc && DEBUG=* node --es-module-specifier-resolution node dist",
+    "format": "prettier -w ./src",
+    "lint": "eslint . --ext .ts --fix",
     "tsc:check": "tsc --noEmit",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -27,6 +30,12 @@
   "bugs": {
     "url": "https://github.com/selfagency/mastodont/issues"
   },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "prettier --write",
+      "eslint --fix"
+    ]
+  },
   "homepage": "https://github.com/selfagency/mastodont#readme",
   "devDependencies": {
     "@thi.ng/args": "^2.2.8",
@@ -42,7 +51,9 @@
     "eslint": "^8.28.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-standard": "^17.0.0",
+    "husky": "^8.0.2",
     "is-url-superb": "^6.1.0",
+    "lint-staged": "^13.0.3",
     "node-fetch": "^3.3.0",
     "open": "^8.4.0",
     "ora": "^6.1.2",

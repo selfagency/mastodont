@@ -62,7 +62,7 @@ export const setBlocks = async (config: MastodontConfig) => {
     `&obfuscate=${config.obfuscate}` +
     `&private_comments=${config.privateComment}` +
     `&public_comment=${config.publicComment}`
-  
+
   const blocksToAddPromises = blocksToAdd.map(domain =>
     fetch(`${baseUrl}&domain=${domain}`, {
       method: 'POST',

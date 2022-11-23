@@ -1,7 +1,3 @@
-interface Object {
-  hasOwnProperty<T>(this: T, v: any): v is keyof T
-}
-
 export interface MastodontArgs {
   accessToken?: string
   nonInteractive?: boolean

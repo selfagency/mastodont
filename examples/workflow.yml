@@ -32,4 +32,10 @@ jobs:
           MASTODONT_INSTANCE_URL: https://my.instance.social
           MASTODONT_BLOCKLIST: https://raw.githubusercontent.com/my-community/blocklist/main/blocklist.txt
         run: |
-          mastodont -e $MASTODONT_INSTANCE_URL -t $MASTODONT_ACCESS_TOKEN -b $MASTODONT_BLOCKLIST -s suspend --private-comment "Added from shared blocklist, $(date +%F %T)" --non-interactive
+          mastodont \
+            -e $MASTODONT_INSTANCE_URL \
+            -t $MASTODONT_ACCESS_TOKEN \
+            -b $MASTODONT_BLOCKLIST \
+            -s suspend \
+            --private-comment "Added from shared blocklist, $(date +%F %T)" \
+            --non-interactive

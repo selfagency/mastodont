@@ -20,20 +20,21 @@ Save the application, click on it, and copy the value of `Your access token` to 
 Open a terminal and run:
 
 ```bash
-npm install -g mastodont
+> npm install -g mastodont
 ```
 
 ## Usage
 
 ```bash
-mastodont
+> mastodont
 ```
 
 Mastodont operates interactively and requires only a Mastodon instance URL, an access token with the necessary
 permissions, and a text file containing a list of domains to block, one per line. A sample blocklist is provided in the
 `examples` folder at the root of this repository. The file can be hosted locally or remotely.
 
-Mastodont will prompt you for your instance URL, access token, and the location of the blocklist file. It will optionally save
+Mastodont will prompt you for your instance URL, access token, and the location of the blocklist file. It will
+optionally save
 the former two options, along with your preferences for domain blocks, to a `.mastodont.yml` file in your home folder so
 that you don't need to enter them repeatedly.
 
@@ -67,6 +68,15 @@ If you want to skip the prompts, you can pass the values as arguments using the 
 Mastodont can be used to automatically update your blocklist on a regular basis. To do so, you can use a cron job or a
 CI workflow. Examples of a cron job and CI workflows are provided in the `examples` folder at the root of this
 repository.
+
+### Debugging
+
+Something not working as expected? You can see more detailed debugging output if you add `DEBUG=*` before the command.
+For example:
+
+```bash
+> DEBUG=* mastodont
+```
 
 ## License
 

@@ -10,13 +10,13 @@ const specs: Args<MastodontArgs> = {
   }),
   blocklist: string({
     alias: 'b',
-    hint: 'PATH',
-    desc: 'Blocklist file path'
+    hint: 'LOCATION',
+    desc: 'Blocklist filepath or URL'
   }),
   config: string({
     alias: 'c',
     hint: 'PATH',
-    desc: 'Custom config file path'
+    desc: 'Custom config filepath'
   }),
   endpoint: string({
     alias: 'e',
@@ -38,7 +38,7 @@ const specs: Args<MastodontArgs> = {
   severity: string({
     alias: 's',
     hint: 'LEVEL',
-    desc: 'Block severity level (silence, suspend, noop)'
+    desc: 'Block severity level (`silence`, `suspend`, `noop`)'
   }),
   obfuscate: flag({
     desc: 'Obfuscate domains in public comment'

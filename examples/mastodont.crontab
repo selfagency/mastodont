@@ -1,0 +1,2 @@
+# Be sure `mastodont` is available in your `$PATH` and these variables are defined in `$HOME/.profile`
+0 0 * * * . $HOME/.profile; mastodont -e $MASTODONT_INSTANCE_URL -t $MASTODONT_ACCESS_TOKEN -b $MASTODONT_BLOCKLIST -s suspend --private-comment "Added from shared blocklist, $(date +%F %T)" --non-interactive

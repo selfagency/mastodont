@@ -1,0 +1,35 @@
+name: Update server blocklist
+description: This workflow runs whenever the blocklist file is updated in the repository
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'blocklist.txt'
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
+      - name: Install Mastodont
+        run: npm i -g mastodont
+
+      - name: Update blocklist
+        env:
+          MASTODONT_ACCESS_TOKEN: ${{ secrets.MASTODONT_ACCESS_TOKEN }}
+          MASTODONT_INSTANCE_URL: https://my.instance.social
+          MASTODONT_BLOCKLIST: https://raw.githubusercontent.com/my-community/blocklist/main/blocklist.txt
+        run: |
+          mastodont -e $MASTODONT_INSTANCE_URL -t $MASTODONT_ACCESS_TOKEN -b $MASTODONT_BLOCKLIST -s suspend --private-comment "Added from shared blocklist, $(date +%F %T)" --non-interactive

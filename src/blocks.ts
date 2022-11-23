@@ -1,3 +1,4 @@
+import isUrl from 'is-url-superb'
 import fetch from 'node-fetch'
 import consola from 'consola'
 import ora from 'ora'
@@ -37,13 +38,17 @@ export const setBlocks = async (config: MastodontConfig) => {
   let blocklist: string[] = []
   try {
     if (!config?.blocklist) {
-      throw new Error('No blocklist file specified.')
+      throw new Error('No blocklist specified.')
     }
 
-    blocklist = (await readFile(<string>config?.blocklist, 'utf8')).split('\n')
+    if (isUrl(config.blocklist)) {
+      blocklist = (await (await fetch(config.blocklist)).text()).split(/\r?\n/)
+    } else {
+      blocklist = (await readFile(<string>config?.blocklist, 'utf8')).split('\n')
+    }
   } catch (e) {
     spinner.fail()
-    consola.error(`Failed to read blocklist file: ${(<Error>e).message}`)
+    consola.error(`Failed to load blocklist: ${(<Error>e).message}`)
     process.exit(1)
   }
 

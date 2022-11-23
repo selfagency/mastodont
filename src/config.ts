@@ -74,7 +74,7 @@ const interactivePrompts = async (config: MastodontConfig, flags: MastodontArgs)
         await prompts({
           type: 'text',
           name: 'value',
-          message: 'Blocklist file:'
+          message: 'Blocklist filepath or URL:'
         })
       )?.value
     }

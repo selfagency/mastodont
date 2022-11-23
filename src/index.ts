@@ -6,9 +6,6 @@ import { setBlocks } from './blocks'
 import { header } from './header'
 import open from 'open'
 
-// "boxen": "^7.0.0",
-// "open": "^8.4.0",
-
 const main = async (): Promise<void> => {
   consola.log(header)
 

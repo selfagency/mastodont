@@ -5,6 +5,8 @@ Mastodont is a CLI tool to import blocklists into Mastodon written in Node.js.
 It uses the `/admin/domain_blocks` [endpoint](https://docs.joinmastodon.org/methods/admin/domain_blocks/#create) newly
 available in Mastodon v4 and therefore requires instances run on v4+.
 
+![mastodont](https://user-images.githubusercontent.com/2541728/203543918-469deec7-6c54-4dd2-b13b-06e5ab5350ce.png)
+
 ## Installation
 
 Go to `https://${YOUR_INSTANCE_URL}/settings/applications/new` and create a new application called `Mastodont` with the

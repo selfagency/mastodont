@@ -1,6 +1,6 @@
 {
   "name": "mastodont",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "CLI tool to import server blocklists into Mastodon v4+",
   "main": "index.js",
   "bin": "index.js",
@@ -12,7 +12,7 @@
     "lint": "eslint . --ext .ts --fix",
     "tsc:check": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "husky install"
+    "postinstall": "if $(git rev-parse --is-inside-work-tree); then husky install; fi"
   },
   "repository": {
     "type": "git",

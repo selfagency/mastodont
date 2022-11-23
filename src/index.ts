@@ -1,5 +1,5 @@
 import consola from 'consola'
-import { getConfig, setConfig } from './config'
+import { getConfig, resetConfig, setConfig } from './config'
 import { args } from './args'
 import { validateCredentials, validateEndpoint } from './validations'
 
@@ -11,8 +11,13 @@ const main = async () => {
   const flags = await args()
 
   if (flags) {
+    // reset config
+    if (flags?.reset) {
+      await resetConfig()
+    }
+
     // get config
-    const config = await getConfig(flags?.result?.config)
+    const config = await getConfig(flags)
 
     // validate config
     const instance = await validateEndpoint(config)
@@ -21,7 +26,7 @@ const main = async () => {
     await validateCredentials(config)
 
     // save config to yml
-    if (instance && !flags?.result?.config) {
+    if (instance && config?.save) {
       await setConfig(config)
     }
   }

@@ -3,7 +3,7 @@ import consola from 'consola'
 import { type MastodontArgs } from './types'
 
 const specs: Args<MastodontArgs> = {
-  'access-token': string({
+  accessToken: string({
     alias: 't',
     hint: 'TOKEN',
     desc: 'Mastodon Access Token'
@@ -16,7 +16,7 @@ const specs: Args<MastodontArgs> = {
   config: string({
     alias: 'c',
     hint: 'PATH',
-    desc: 'Config file path (default is ~/.mastodont.yml)'
+    desc: 'Custom config file path'
   }),
   endpoint: string({
     alias: 'e',
@@ -24,13 +24,16 @@ const specs: Args<MastodontArgs> = {
     desc: 'Mastodon server URL'
   }),
   reset: flag({
-    desc: 'Reset config'
+    desc: 'Reset config (cannot be used with other options)'
   }),
-  'reject-media': flag({
-    desc: 'Reject media from domains'
+  save: flag({
+    desc: 'Save config to default location'
   }),
-  'reject-reports': flag({
-    desc: 'Reject reports from domains'
+  rejectMedia: flag({
+    desc: 'Reject media from domains (works with `limit`, `noop`)'
+  }),
+  rejectReports: flag({
+    desc: 'Reject reports from domains (works with `limit`, `noop`)'
   }),
   severity: string({
     alias: 's',
@@ -40,18 +43,21 @@ const specs: Args<MastodontArgs> = {
   obfuscate: flag({
     desc: 'Obfuscate domains in public comment'
   }),
-  'private-comment': string({
+  privateComment: string({
     hint: 'COMMENT',
     desc: 'Private comment'
   }),
-  'public-comment': string({
+  publicComment: string({
     hint: 'COMMENT',
     desc: 'Public comment'
+  }),
+  nonInteractive: flag({
+    desc: 'Disable interactive mode'
   })
 }
 
 export const args = async () => {
   const args = parse(specs, process.argv)
   consola.debug(`Arguments: ${JSON.stringify(args?.result, null, 2)}`)
-  return args
+  return args?.result
 }

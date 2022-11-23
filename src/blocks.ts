@@ -10,7 +10,7 @@ export const getBlocks = async (config: MastodontConfig, quiet: boolean) => {
   if (!quiet) spinner.start()
   const res = await fetch(endpoint(config), {
     headers: {
-      Authorization: `Bearer ${config['access-token']}`
+      Authorization: `Bearer ${config.accessToken}`
     }
   })
 
@@ -39,11 +39,3 @@ export const setBlocks = async (config: MastodontConfig) => {
     }
   })
 }
-
-// domain
-// severity - silence, suspend, noop
-// reject_media
-// reject_reports
-// private_comment
-// public_comment
-// obfuscate

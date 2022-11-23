@@ -19,3 +19,15 @@ export interface MastodontArgs {
 }
 
 export type MastodontConfig = MastodontArgs
+
+export interface Block {
+  id: string
+  domain: string
+  created_at: string
+  severity: string
+  reject_media: boolean
+  reject_reports: boolean
+  private_comment?: null
+  public_comment?: null
+  obfuscate: boolean
+}

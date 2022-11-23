@@ -2,11 +2,16 @@ import consola from 'consola'
 import { getConfig, resetConfig, setConfig } from './config'
 import { args } from './args'
 import { validateCredentials, validateEndpoint } from './validations'
+import { setBlocks } from './blocks'
+import { header } from './header'
+import open from 'open'
 
 // "boxen": "^7.0.0",
 // "open": "^8.4.0",
 
-const main = async () => {
+const main = async (): Promise<void> => {
+  consola.log(header)
+
   // check if flags are set
   const flags = await args()
 
@@ -29,11 +34,16 @@ const main = async () => {
     if (instance && config?.save) {
       await setConfig(config)
     }
+
+    // process blocklist
+    await setBlocks(config)
+
+    // open browser
+    if (!flags.nonInteractive) {
+      consola.info('Opening browser to instance blocklist...')
+      await open(`${config.endpoint}/admin/instances?limited=1`)
+    }
   }
 }
-
-// request blocklist file path
-// validate blocklist file exists
-// process blocklist
 
 main().catch(e => consola.error(<Error>e.message))

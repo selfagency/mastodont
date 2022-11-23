@@ -10,7 +10,7 @@ import { MastodontArgs, MastodontConfig } from './types'
 const defaultConfigPath = path.join(homedir(), '.mastodont.yml')
 const redact = (str: string) => str.replace(/./g, '*')
 
-const interactivePrompts = async (config: MastodontConfig, flags: MastodontArgs) => {
+const interactivePrompts = async (config: MastodontConfig, flags: MastodontArgs): Promise<MastodontConfig> => {
   try {
     const questions: Record<string, PromptObject> = {
       endpoint: {
@@ -67,6 +67,16 @@ const interactivePrompts = async (config: MastodontConfig, flags: MastodontArgs)
       } else {
         config[key] = flags[key] || config[key]
       }
+    }
+
+    if (!flags.blocklist) {
+      config.blocklist = (
+        await prompts({
+          type: 'text',
+          name: 'value',
+          message: 'Blocklist file:'
+        })
+      )?.value
     }
 
     if (!flags.publicComment) {
@@ -151,13 +161,9 @@ export const getConfig = async (flags: MastodontArgs): Promise<MastodontConfig> 
 export const setConfig = async (config: MastodontConfig): Promise<void> => {
   const spinner = ora(`Writing config to \`${defaultConfigPath}\`.`).start()
   try {
-    delete config.blocklist
-    delete config.config
-    delete config.save
-    delete config.reset
-    delete config.publicComment
-    delete config.privateComment
-    delete config.nonInteractive
+    ['save', 'nonInteractive', 'config', 'blocklist', 'reset', 'publicComment', 'privateComment'].forEach(
+      key => delete config[key]
+    )
     spinner.stopAndPersist()
     const yamlConfig = yamlStringify(config)
     consola.debug(`Writing config:\n${yamlConfig}`)

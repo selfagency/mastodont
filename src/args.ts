@@ -56,7 +56,7 @@ const specs: Args<MastodontArgs> = {
   })
 }
 
-export const args = async () => {
+export const args = async (): Promise<MastodontArgs | void> => {
   const args = parse(specs, process.argv)
   consola.debug(`Arguments: ${JSON.stringify(args?.result, null, 2)}`)
   return args?.result

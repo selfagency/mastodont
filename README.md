@@ -30,13 +30,13 @@ Open a terminal and run:
 ```
 
 Mastodont operates interactively and requires only a Mastodon instance URL, an access token with the necessary
-permissions, and a text file containing a list of domains to block, one per line. A sample blocklist is provided in the
-`examples` folder at the root of this repository. The file can be hosted locally or remotely.
+permissions, and a text file containing a list of domains to block, one per line. The file can be hosted locally or remotely. 
+A sample blocklist is provided in the `examples` folder at the root of this repository. You can also try [mastodon-defederate]
+(https://github.com/Anthchirp/mastodon-defederate), which will download blocklists from servers you trust. 
 
 Mastodont will prompt you for your instance URL, access token, and the location of the blocklist file. It will
-optionally save
-the former two options, along with your preferences for domain blocks, to a `.mastodont.yml` file in your home folder so
-that you don't need to enter them repeatedly.
+optionally save the former two options, along with your preferences for domain blocks, to a `.mastodont.yml` file in your home 
+folder so that you don't need to enter them repeatedly.
 
 If you want to skip the prompts, you can pass the values as arguments using the following flags:
 

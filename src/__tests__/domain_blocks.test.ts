@@ -3,6 +3,7 @@ import fetch from 'node-fetch';
 import os from 'os';
 import path from 'path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createTempFileWithContent, cleanupTempDir } from './test-utils.js';
 
 // Mock node-fetch and then import the mocked fetch for assertions. The vi.mock
 // call is hoisted by Vitest so it must not reference top-level variables.
@@ -18,7 +19,7 @@ describe('domain_blocks: Mastodon domain_blocks integration', () => {
   afterEach(async () => {
     vi.restoreAllMocks();
     if (tmpFile) await fs.unlink(tmpFile).catch(() => {});
-    if (tmpDir) await fs.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+    await cleanupTempDir(tmpDir);
     mockFetch.mockReset();
   });
 
@@ -32,9 +33,7 @@ describe('domain_blocks: Mastodon domain_blocks integration', () => {
       headers: { get: (_: string) => null },
     } as any);
 
-    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mastodont-test-'));
-    tmpFile = path.join(tmpDir, `mastodont-${Date.now()}.txt`);
-    await fs.writeFile(tmpFile, 'example.com\n');
+    ({ tmpDir, tmpFile } = await createTempFileWithContent('example.com\n'));
 
     mockFetch.mockResolvedValue({ status: 201 } as any);
 

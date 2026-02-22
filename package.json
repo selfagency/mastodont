@@ -49,6 +49,7 @@
     "@types/prompts": "^2.4.9",
     "@vitest/coverage-v8": "^4.0.18",
     "consola": "3.4.2",
+    "csvtojson": "^2.0.14",
     "husky": "9.1.7",
     "is-url-superb": "^6.1.0",
     "lint-staged": "16.2.7",

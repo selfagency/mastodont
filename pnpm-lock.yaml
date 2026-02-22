@@ -23,6 +23,9 @@ importers:
       consola:
         specifier: 3.4.2
         version: 3.4.2
+      csvtojson:
+        specifier: ^2.0.14
+        version: 2.0.14
       husky:
         specifier: 9.1.7
         version: 9.1.7
@@ -887,6 +890,11 @@ packages:
   create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
 
+  csvtojson@2.0.14:
+    resolution: {integrity: sha512-F7NNvhhDyob7OsuEGRsH0FM1aqLs/WYITyza3l+hTEEmOK9sGPBlYQZwlVG0ezCojXYpE17lhS5qL6BCOZSPyA==}
+    engines: {node: '>=8.0.0'}
+    hasBin: true
+
   data-uri-to-buffer@4.0.1:
     resolution: {integrity: sha512-0R9ikRb668HB7QDxT1vkpuUBtqc53YyAwMwGeUFKRojY/NWKvdZ+9UYtRfGmhqNbRkTSVpMbmyhXipFFv2cb/A==}
     engines: {node: '>= 12'}
@@ -1071,6 +1079,9 @@ packages:
   load-tsconfig@0.2.5:
     resolution: {integrity: sha512-IXO6OCs9yg8tMKzfPZ1YmheJbZCiEsnBdcB03l0OcfK9prKnJb96siuHCr5Fl37/yo9DnKU+TLpxzTUspw9shg==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  lodash@4.17.23:
+    resolution: {integrity: sha512-LgVTMpQtIopCi79SJeDiP0TfWi5CNEc/L/aRdTh3yIvmZXTnheWpKjSZhnvMl8iXbC1tFg9gdHHDMLoV7CnG+w==}
 
   log-symbols@7.0.1:
     resolution: {integrity: sha512-ja1E3yCr9i/0hmBVaM0bfwDjnGy8I/s6PP4DFp+yP+a+mrHO4Rm7DtmnqROTUkHIkqffC84YY7AeqX6oFk0WFg==}
@@ -2029,6 +2040,10 @@ snapshots:
 
   create-require@1.1.1: {}
 
+  csvtojson@2.0.14:
+    dependencies:
+      lodash: 4.17.23
+
   data-uri-to-buffer@4.0.1: {}
 
   debug@4.4.3:
@@ -2192,6 +2207,8 @@ snapshots:
       wrap-ansi: 9.0.2
 
   load-tsconfig@0.2.5: {}
+
+  lodash@4.17.23: {}
 
   log-symbols@7.0.1:
     dependencies:

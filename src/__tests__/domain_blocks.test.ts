@@ -13,10 +13,12 @@ import * as blocks from '../blocks.js';
 
 describe('domain_blocks: Mastodon domain_blocks integration', () => {
   let tmpFile = '';
+  let tmpDir = '';
 
   afterEach(async () => {
     vi.restoreAllMocks();
     if (tmpFile) await fs.unlink(tmpFile).catch(() => {});
+    if (tmpDir) await fs.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
     mockFetch.mockReset();
   });
 
@@ -30,7 +32,8 @@ describe('domain_blocks: Mastodon domain_blocks integration', () => {
       headers: { get: (_: string) => null },
     } as any);
 
-    tmpFile = path.join(os.tmpdir(), `mastodont-test-${Date.now()}.txt`);
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mastodont-test-'));
+    tmpFile = path.join(tmpDir, `mastodont-${Date.now()}.txt`);
     await fs.writeFile(tmpFile, 'example.com\n');
 
     mockFetch.mockResolvedValue({ status: 201 } as any);

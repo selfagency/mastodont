@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // All mocks must be declared before any dynamic imports
 vi.mock('consola', () => ({
-  consola: { log: vi.fn(), info: vi.fn(), error: vi.fn(), debug: vi.fn() },
+  consola: { log: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 vi.mock('open', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('../args.js', () => ({ __esModule: true, args: vi.fn() }));
@@ -124,5 +124,14 @@ describe('index (main)', () => {
     const mocks = await setupMocks({ nonInteractive: true });
     await runMain();
     expect(mocks.mockOpen).not.toHaveBeenCalled();
+  });
+
+  it('handles browser open failure gracefully and logs the URL', async () => {
+    const mocks = await setupMocks({ endpoint: 'https://mastodon.social' });
+    mocks.mockOpen.mockRejectedValue(new Error('spawn xdg-open ENOENT'));
+    await runMain();
+    expect(mocks.mockConsola.warn).toHaveBeenCalledWith(
+      expect.stringContaining('https://mastodon.social/admin/instances?limited=1'),
+    );
   });
 });

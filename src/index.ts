@@ -37,8 +37,13 @@ const main = async (): Promise<void> => {
 
     // open browser
     if (!flags.nonInteractive) {
+      const url = `${config.endpoint}/admin/instances?limited=1`;
       consola.info('Opening browser to instance blocklist...');
-      await open(`${config.endpoint}/admin/instances?limited=1`);
+      try {
+        await open(url);
+      } catch {
+        consola.warn(`Could not open browser. Visit the blocklist manually: ${url}`);
+      }
     }
   }
 };

@@ -27,7 +27,8 @@
       "Bash(gh api:*)",
       "Bash(gh run list:*)",
       "Skill(commit-commands:commit-push-pr)",
-      "Skill(commit-commands:commit-push-pr:*)"
+      "Skill(commit-commands:commit-push-pr:*)",
+      "Bash(pnpm run lint:*)"
     ]
   }
 }

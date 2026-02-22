@@ -37,7 +37,7 @@ export const validateCredentials = async (config: MastodontConfig) => {
   try {
     await getBlocks(config, true);
     spinner.succeed();
-  } catch (_e) {
+  } catch {
     spinner.fail();
     throw new Error('Failed to authenticate to API. Access token is likely invalid.');
   }

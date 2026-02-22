@@ -23,22 +23,24 @@
   "main": "index.js",
   "bin": "index.js",
   "scripts": {
-    "build": "node esbuild.js; chmod +x dist/index.js",
-    "dev": "tsc && DEBUG=* node --es-module-specifier-resolution node dist",
+    "build": "tsup src/index.ts --format cjs,esm --dts --out-dir dist",
+    "postbuild": "node ./scripts/write-dist-package.js",
+    "dev": "DEBUG=* npx tsx --watch src/index.ts",
     "format": "oxfmt --write",
     "postinstall": "if $(git rev-parse --is-inside-work-tree); then husky install; fi",
     "lint": "oxlint",
     "lint-staged": "lint-staged --allow-empty",
     "lint:fix": "oxlint --fix",
-    "prepare": "husky install",
+    "prepare": "husky",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
     "tsc:check": "tsc --noEmit"
   },
   "lint-staged": {
     "src/**/*.ts": [
-      "prettier --write",
-      "eslint --fix"
+      "pnpm tsc:check",
+      "pnpm lint:fix",
+      "pnpm format"
     ]
   },
   "devDependencies": {
@@ -46,10 +48,6 @@
     "@types/node": "25.3.0",
     "@types/prompts": "^2.4.9",
     "consola": "3.4.2",
-    "esbuild": "^0.27.3",
-    "esbuild-plugin-clean": "^1.0.1",
-    "esbuild-plugin-copy-file": "^0.0.2",
-    "esbuild-plugin-fileloc": "^0.0.6",
     "husky": "9.1.7",
     "is-url-superb": "^6.1.0",
     "lint-staged": "16.2.7",
@@ -63,8 +61,10 @@
     "prompts": "^2.4.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "tsup": "^8.5.1",
     "typescript": "5.9.3",
     "vitest": "^4.0.18",
     "yaml": "^2.8.2"
-  }
+  },
+  "packageManager": "pnpm@10.30.0+sha512.2b5753de015d480eeb88f5b5b61e0051f05b4301808a82ec8b840c9d2adf7748eb352c83f5c1593ca703ff1017295bc3fdd3119abb9686efc96b9fcb18200937"
 }

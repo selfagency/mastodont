@@ -4,13 +4,15 @@ on:
   push:
     branches: [main]
     paths:
-      - 'src/**'
-      - '.github/**'
+      - "src/**"
+      - "scripts/**"
+      - ".github/**"
   pull_request:
     branches: [main]
     paths:
-      - 'src/**'
-      - '.github/**'
+      - "src/**"
+      - "scripts/**"
+      - ".github/**"
   workflow_dispatch:
 
 permissions:
@@ -36,6 +38,7 @@ jobs:
           filters: |
             src:
               - 'src/**'
+              - 'scripts/**'
             actions:
               - '.github/**'
 
@@ -62,7 +65,7 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
         with:
-          category: '/language:javascript-typescript'
+          category: "/language:javascript-typescript"
 
   analyze-actions:
     name: Analyze (actions)
@@ -84,4 +87,4 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
         with:
-          category: '/language:actions'
+          category: "/language:actions"

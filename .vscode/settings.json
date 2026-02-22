@@ -1,3 +1,4 @@
 {
-  "beans.mcp.showStartupNotification": false
+  "beans.mcp.showStartupNotification": false,
+  "editor.defaultFormatter": "oxc.oxc-vscode"
 }

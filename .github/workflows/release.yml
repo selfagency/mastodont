@@ -22,18 +22,47 @@ jobs:
 
       - name: Check package version
         id: check
-        uses: 'EndBug/version-check@v1'
+        uses: "EndBug/version-check@v2"
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           diff-search: true
 
-      - name: Create release
-        uses: 'zendesk/action-create-release@v1'
+      - name: Generate changelog
+        id: generate_changelog
+        run: |
+          git fetch --tags
+          prev_tag=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          if [ -z "$prev_tag" ] || [ "$prev_tag" = "" ]; then
+            range="HEAD"
+          else
+            range="$prev_tag..HEAD"
+          fi
+          echo "Changelog range: $range"
+          # list commits with subject and short hash
+          changelog=$(git log $range --pretty=format:'- %s (%h)')
+          if [ -z "$changelog" ]; then
+            changelog="No notable changes"
+          fi
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$changelog" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Write changelog file
+        id: write_changelog
+        run: |
+          CHG_FILE="changelog-v${{ steps.check.outputs.version }}.md"
+          echo "# Changelog for v${{ steps.check.outputs.version }}" > "$CHG_FILE"
+          echo "" >> "$CHG_FILE"
+          echo "${{ steps.generate_changelog.outputs.changelog }}" >> "$CHG_FILE"
+          echo "changelog_file=$CHG_FILE" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub release and upload changelog
+        uses: softprops/action-gh-release@v1
         if: ${{ steps.check.outputs.changed == 'true' }}
+        with:
+          tag_name: "v${{ steps.check.outputs.version }}"
+          name: "v${{ steps.check.outputs.version }}"
+          body: ${{ steps.generate_changelog.outputs.changelog }}
+          files: ${{ steps.write_changelog.outputs.changelog_file }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.check.outputs.version}}
-          release_name: v${{ steps.check.outputs.version}}
-          draft: false
-          prerelease: false

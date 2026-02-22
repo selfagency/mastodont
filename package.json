@@ -1,6 +1,6 @@
 {
   "name": "mastodont",
-  "version": "0.1.12",
+  "version": "0.2.0",
   "description": "CLI tool to import server blocklists into Mastodon v4+",
   "keywords": [
     "mastodon",

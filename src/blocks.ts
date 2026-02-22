@@ -1,4 +1,5 @@
 import { consola } from 'consola';
+import csvtojson from 'csvtojson';
 import { readFile } from 'fs/promises';
 import isUrl from 'is-url-superb';
 import fetch, { type Response } from 'node-fetch';
@@ -67,9 +68,17 @@ export const loadDomainList = async (source: string): Promise<string[]> => {
   }
 
   if (ext.endsWith('.csv')) {
-    return raw
-      .split(/\r?\n/)
-      .map(line => line.split(',')[0]!.trim())
+    // Use csvtojson for robust CSV parsing (handles quoted fields, embedded commas, etc.)
+    const records: Record<string, string>[] = await csvtojson().fromString(raw);
+
+    return records
+      .map(rec => {
+        // Prefer a `domain` column when present, otherwise take the first column value
+        if ('domain' in rec) return (rec.domain ?? '').trim();
+        const keys = Object.keys(rec);
+        if (keys.length > 0) return (rec[keys[0]] ?? '').trim();
+        return '';
+      })
       .filter((d, i) => d.length > 0 && !(i === 0 && d.toLowerCase() === 'domain'));
   }
 

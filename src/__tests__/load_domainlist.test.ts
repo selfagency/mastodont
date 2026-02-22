@@ -40,6 +40,16 @@ describe('loadDomainList and parseLinkHeader edge cases', () => {
     expect(out).toEqual(['example.com', 'other.com']);
   });
 
+  it('loads CSV where domain column is not first (header-mapped)', async () => {
+    const content = 'notes,domain\nfoo,example.org\nbar,another.org\n';
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mastodont-test-'));
+    tmpFile = path.join(tmpDir, 'list.csv');
+    await fs.writeFile(tmpFile, content);
+
+    const out = await loadDomainList(tmpFile);
+    expect(out).toEqual(['example.org', 'another.org']);
+  });
+
   it('loads from a URL source via fetch', async () => {
     mockFetch.mockResolvedValueOnce({ text: () => Promise.resolve('u1.com\nu2.com\n') } as any);
     const out = await loadDomainList('http://example.test/list.txt');

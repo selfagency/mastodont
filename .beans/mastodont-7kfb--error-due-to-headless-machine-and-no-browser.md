@@ -3,9 +3,9 @@
 title: Error due to headless machine and no browser
 status: todo
 type: bug
-priority: normal
+priority: high
 created_at: 2026-02-22T06:46:02Z
-updated_at: 2026-02-22T06:47:29Z
+updated_at: 2026-02-22T06:52:01Z
 ---
 
 ℹ Opening browser to instance blocklist... 22:10:36

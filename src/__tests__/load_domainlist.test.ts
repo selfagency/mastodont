@@ -40,6 +40,16 @@ describe('loadDomainList and parseLinkHeader edge cases', () => {
     expect(out).toEqual(['example.com', 'other.com']);
   });
 
+  it('loads CSV with non-domain header and uses first column', async () => {
+    const content = 'host,notes\nsite.example,foo\nanother.example,bar\n';
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mastodont-test-'));
+    tmpFile = path.join(tmpDir, 'list.csv');
+    await fs.writeFile(tmpFile, content);
+
+    const out = await loadDomainList(tmpFile);
+    expect(out).toEqual(['site.example', 'another.example']);
+  });
+
   it('loads CSV where domain column is not first (header-mapped)', async () => {
     const content = 'notes,domain\nfoo,example.org\nbar,another.org\n';
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mastodont-test-'));
@@ -76,5 +86,29 @@ describe('loadDomainList and parseLinkHeader edge cases', () => {
     const config = { endpoint: 'http://example.test', accessToken: 'token' } as any;
     const res = await getBlocks(config, true);
     expect(res.length).toBe(1);
+  });
+
+  it('handles malformed Link header (no >) and stops pagination', async () => {
+    // First GET returns one block and malformed link header with '<' but no closing '>'
+    mockFetch.mockResolvedValueOnce({
+      status: 200,
+      json: () => Promise.resolve([{ id: '1', domain: 'a.com' }]),
+      text: () => Promise.resolve(JSON.stringify([{ id: '1', domain: 'a.com' }])),
+      headers: { get: (_: string) => '<http://bad.example/next; rel="next"' },
+    } as any);
+
+    const config = { endpoint: 'http://example.test', accessToken: 'token' } as any;
+    const res = await getBlocks(config, true);
+    expect(res.length).toBe(1);
+  });
+
+  it('strips CSV header row regardless of case', async () => {
+    const content = 'Domain,notes\nCaseSite.com,foo\n';
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mastodont-test-'));
+    tmpFile = path.join(tmpDir, 'list.csv');
+    await fs.writeFile(tmpFile, content);
+
+    const out = await loadDomainList(tmpFile);
+    expect(out).toEqual(['CaseSite.com']);
   });
 });

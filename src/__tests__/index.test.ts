@@ -6,7 +6,11 @@ vi.mock('consola', () => ({
 }));
 vi.mock('open', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('../args.js', () => ({ __esModule: true, args: vi.fn() }));
-vi.mock('../blocks.js', () => ({ __esModule: true, setBlocks: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('../blocks.js', () => ({
+  __esModule: true,
+  setBlocks: vi.fn().mockResolvedValue(undefined),
+  removeBlocks: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock('../config.js', () => ({
   __esModule: true,
   getConfig: vi.fn(),
@@ -28,7 +32,7 @@ describe('index (main)', () => {
 
   const setupMocks = async (flagsValue: Record<string, unknown> | undefined) => {
     const { args } = await import('../args.js');
-    const { setBlocks } = await import('../blocks.js');
+    const { setBlocks, removeBlocks } = await import('../blocks.js');
     const { getConfig, resetConfig, setConfig } = await import('../config.js');
     const { validateEndpoint, validateCredentials } = await import('../validations.js');
     const { consola } = await import('consola');
@@ -36,6 +40,7 @@ describe('index (main)', () => {
 
     const mockArgs = vi.mocked(args);
     const mockSetBlocks = vi.mocked(setBlocks);
+    const mockRemoveBlocks = vi.mocked(removeBlocks);
     const mockGetConfig = vi.mocked(getConfig);
     const mockResetConfig = vi.mocked(resetConfig);
     const mockSetConfig = vi.mocked(setConfig);
@@ -51,6 +56,7 @@ describe('index (main)', () => {
     mockValidateEndpoint.mockResolvedValue({ version: '4.1.0', domain: 'mastodon.social' } as any);
     mockValidateCredentials.mockResolvedValue(undefined);
     mockSetBlocks.mockResolvedValue(undefined);
+    mockRemoveBlocks.mockResolvedValue(undefined);
     mockResetConfig.mockResolvedValue(undefined);
     mockSetConfig.mockResolvedValue(undefined);
     mockOpen.mockResolvedValue(undefined as any);
@@ -58,6 +64,7 @@ describe('index (main)', () => {
     return {
       mockArgs,
       mockSetBlocks,
+      mockRemoveBlocks,
       mockGetConfig,
       mockResetConfig,
       mockSetConfig,
@@ -80,6 +87,19 @@ describe('index (main)', () => {
     const mocks = await setupMocks(undefined);
     await runMain();
     expect(mocks.mockGetConfig).not.toHaveBeenCalled();
+  });
+
+  it('calls removeBlocks when allowlist is set and no blocklist', async () => {
+    const mocks = await setupMocks({ allowlist: true });
+    await runMain();
+    expect(mocks.mockRemoveBlocks).toHaveBeenCalled();
+  });
+
+  it('logs error when getConfig throws (main catch)', async () => {
+    const mocks = await setupMocks({ endpoint: 'https://mastodon.social' });
+    mocks.mockGetConfig.mockRejectedValue(new Error('boom'));
+    await runMain();
+    expect(mocks.mockConsola.error).toHaveBeenCalledWith('boom');
   });
 
   it('calls resetConfig when flags.reset is true', async () => {

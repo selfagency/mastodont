@@ -11,6 +11,8 @@ jobs:
   test:
     name: Run tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     concurrency:
       group: ci-tests-${{ github.ref }}
       cancel-in-progress: true

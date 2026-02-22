@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('node-fetch', () => ({ default: vi.fn() }));
 vi.mock('is-url-superb', () => ({ default: vi.fn() }));
@@ -12,8 +12,8 @@ vi.mock('consola', () => ({
 }));
 vi.mock('../blocks.js', () => ({ __esModule: true, getBlocks: vi.fn() }));
 
-import fetch from 'node-fetch';
 import isUrl from 'is-url-superb';
+import fetch from 'node-fetch';
 
 let validateEndpoint: any;
 let validateCredentials: any;
@@ -55,9 +55,9 @@ describe('validateEndpoint', () => {
   it('throws when the URL is invalid', async () => {
     mockIsUrl.mockReturnValue(false);
 
-    await expect(
-      validateEndpoint({ ...baseConfig, endpoint: 'not-a-url' })
-    ).rejects.toThrow('Mastodon server URL is invalid.');
+    await expect(validateEndpoint({ ...baseConfig, endpoint: 'not-a-url' })).rejects.toThrow(
+      'Mastodon server URL is invalid.',
+    );
 
     expect(mockFetch).not.toHaveBeenCalled();
   });
@@ -65,27 +65,21 @@ describe('validateEndpoint', () => {
   it('throws when fetch returns a non-200 status', async () => {
     mockFetch.mockResolvedValue(createMockResponse(404, {}) as never);
 
-    await expect(validateEndpoint(baseConfig)).rejects.toThrow(
-      'Mastodon server URL is invalid.'
-    );
+    await expect(validateEndpoint(baseConfig)).rejects.toThrow('Mastodon server URL is invalid.');
   });
 
   it('throws when the Mastodon version is less than 4', async () => {
     const instance = { version: '3.5.0', domain: 'mastodon.social' };
     mockFetch.mockResolvedValue(createMockResponse(200, instance) as never);
 
-    await expect(validateEndpoint(baseConfig)).rejects.toThrow(
-      'Mastodon version 4 or higher required.'
-    );
+    await expect(validateEndpoint(baseConfig)).rejects.toThrow('Mastodon version 4 or higher required.');
   });
 
   it('throws when the version field is missing or produces NaN', async () => {
     const instance = { domain: 'mastodon.social' };
     mockFetch.mockResolvedValue(createMockResponse(200, instance) as never);
 
-    await expect(validateEndpoint(baseConfig)).rejects.toThrow(
-      'Mastodon version 4 or higher required.'
-    );
+    await expect(validateEndpoint(baseConfig)).rejects.toThrow('Mastodon version 4 or higher required.');
   });
 
   it('returns the instance object on success', async () => {
@@ -120,7 +114,7 @@ describe('validateCredentials', () => {
     mockGetBlocks.mockRejectedValue(new Error('Unauthorized') as never);
 
     await expect(validateCredentials(baseConfig)).rejects.toThrow(
-      'Failed to authenticate to API. Access token is likely invalid.'
+      'Failed to authenticate to API. Access token is likely invalid.',
     );
   });
 });

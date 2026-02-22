@@ -32,7 +32,7 @@
     "lint-staged": "lint-staged --allow-empty",
     "lint:fix": "oxlint --fix",
     "prepare": "husky",
-    "test": "vitest",
+    "test": "vitest --run",
     "test:coverage": "vitest --coverage",
     "tsc:check": "tsc --noEmit"
   },
@@ -47,6 +47,7 @@
     "@thi.ng/args": "^2.2.8",
     "@types/node": "25.3.0",
     "@types/prompts": "^2.4.9",
+    "@vitest/coverage-v8": "^4.0.18",
     "consola": "3.4.2",
     "husky": "9.1.7",
     "is-url-superb": "^6.1.0",

@@ -49,6 +49,7 @@ jobs:
 
       - name: Write changelog file
         id: write_changelog
+        if: ${{ steps.check.outputs.changed == 'true' }}
         run: |
           CHG_FILE="changelog-v${{ steps.check.outputs.version }}.md"
           echo "# Changelog for v${{ steps.check.outputs.version }}" > "$CHG_FILE"

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // All mocks must be declared before any dynamic imports
 vi.mock('consola', () => ({
@@ -7,13 +7,15 @@ vi.mock('consola', () => ({
 vi.mock('open', () => ({ default: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('../args.js', () => ({ __esModule: true, args: vi.fn() }));
 vi.mock('../blocks.js', () => ({ __esModule: true, setBlocks: vi.fn().mockResolvedValue(undefined) }));
-vi.mock('../config.js', () => ({ __esModule: true,
+vi.mock('../config.js', () => ({
+  __esModule: true,
   getConfig: vi.fn(),
   resetConfig: vi.fn().mockResolvedValue(undefined),
   setConfig: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock('../header.js', () => ({ __esModule: true, header: 'test-header' }));
-vi.mock('../validations.js', () => ({ __esModule: true,
+vi.mock('../validations.js', () => ({
+  __esModule: true,
   validateEndpoint: vi.fn(),
   validateCredentials: vi.fn().mockResolvedValue(undefined),
 }));
@@ -54,9 +56,16 @@ describe('index (main)', () => {
     mockOpen.mockResolvedValue(undefined as any);
 
     return {
-      mockArgs, mockSetBlocks, mockGetConfig, mockResetConfig,
-      mockSetConfig, mockValidateEndpoint, mockValidateCredentials,
-      mockOpen, mockConsola, config,
+      mockArgs,
+      mockSetBlocks,
+      mockGetConfig,
+      mockResetConfig,
+      mockSetConfig,
+      mockValidateEndpoint,
+      mockValidateCredentials,
+      mockOpen,
+      mockConsola,
+      config,
     };
   };
 

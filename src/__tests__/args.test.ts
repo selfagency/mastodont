@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { args } from '../args.js';
 
 vi.mock('@thi.ng/args', () => ({
   __esModule: true,
   parse: vi.fn(),
-  flag: vi.fn((opts) => opts),
-  string: vi.fn((opts) => opts),
+  flag: vi.fn(opts => opts),
+  string: vi.fn(opts => opts),
 }));
 
 vi.mock('consola', () => ({
@@ -71,8 +71,6 @@ describe('args', () => {
 
     await args();
 
-    expect(mockConsola.debug).toHaveBeenCalledWith(
-      `Arguments: ${JSON.stringify(mockResult, null, 2)}`
-    );
+    expect(mockConsola.debug).toHaveBeenCalledWith(`Arguments: ${JSON.stringify(mockResult, null, 2)}`);
   });
 });

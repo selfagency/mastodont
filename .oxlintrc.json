@@ -1,6 +1,14 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["unicorn", "typescript", "oxc"],
+  "plugins": [
+    "unicorn",
+    "typescript",
+    "oxc",
+    "import",
+    "promise",
+    "node",
+    "vitest"
+  ],
   "categories": {},
   "rules": {},
   "settings": {
@@ -22,5 +30,8 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": ["node_modules", "dist"]
+  "ignorePatterns": [
+    "node_modules",
+    "dist"
+  ]
 }

@@ -14,9 +14,35 @@ const authHeaders = (config: MastodontConfig) => ({
 });
 
 const parseLinkHeader = (header: string | null): string | null => {
+  // Avoid using a complex regex to prevent any risk of catastrophic backtracking.
+  // Instead perform a linear scan using index/substring operations which are
+  // O(n) and not vulnerable to backtracking DoS.
   if (!header) return null;
-  const match = header.match(/<([^>]+)>;\s*rel="next"/);
-  return match?.[1] ?? null;
+
+  const REL_NEXT = 'rel="next"';
+  let searchIndex = 0;
+
+  while (true) {
+    const relIndex = header.indexOf(REL_NEXT, searchIndex);
+    if (relIndex === -1) return null;
+
+    // Find the nearest preceding '<' and following '>' that enclose the URL
+    const lt = header.lastIndexOf('<', relIndex);
+    if (lt === -1) {
+      // Move past this rel token and keep searching
+      searchIndex = relIndex + REL_NEXT.length;
+      continue;
+    }
+
+    const gt = header.indexOf('>', lt);
+    // Ensure the closing '>' exists and comes before the rel token
+    if (gt === -1 || gt > relIndex) {
+      searchIndex = relIndex + REL_NEXT.length;
+      continue;
+    }
+
+    return header.slice(lt + 1, gt);
+  }
 };
 
 export const getBlocks = async (config: MastodontConfig, quiet: boolean): Promise<Block[]> => {

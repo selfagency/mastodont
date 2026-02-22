@@ -1,13 +1,11 @@
 ---
 # mastodont-8u8z
 title: Add support for CSV, JSON blocklists
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-22T06:45:25Z
-updated_at: 2026-02-22T22:17:00Z
-branch: feature/mastodont-8u8z-csv-json-blocklists
-pr: https://github.com/selfagency/mastodont/pull/18
+updated_at: 2026-02-22T22:54:14Z
 ---
 
 not just textfiles

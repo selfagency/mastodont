@@ -1,7 +1,7 @@
 import { consola } from 'consola';
 import open from 'open';
 import { args } from './args.js';
-import { setBlocks } from './blocks.js';
+import { setBlocks, removeBlocks } from './blocks.js';
 import { getConfig, resetConfig, setConfig } from './config.js';
 import { header } from './header.js';
 import { validateCredentials, validateEndpoint } from './validations.js';
@@ -32,8 +32,12 @@ const main = async (): Promise<void> => {
       await setConfig(config);
     }
 
-    // process blocklist
-    await setBlocks(config);
+    // process blocklist or remove blocks
+    if (config.allowlist && !config.blocklist) {
+      await removeBlocks(config);
+    } else {
+      await setBlocks(config);
+    }
 
     // open browser
     if (!flags.nonInteractive) {

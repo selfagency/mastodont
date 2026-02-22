@@ -130,7 +130,7 @@ export const getConfig = async (flags: MastodontArgs): Promise<MastodontConfig> 
     try {
       config = yaml(await readFile(flags.config, 'utf-8'));
       spinner.succeed();
-    } catch (_e) {
+    } catch {
       spinner.fail();
       consola.error(`Config file not found at \`${flags.config}\`.`);
       process.exit(1);
@@ -139,7 +139,7 @@ export const getConfig = async (flags: MastodontArgs): Promise<MastodontConfig> 
     try {
       config = yaml(await readFile(defaultConfigPath, 'utf-8'));
       spinner.succeed();
-    } catch (_e) {
+    } catch {
       spinner.stopAndPersist({ text: `Default config file not found.` });
     }
   }

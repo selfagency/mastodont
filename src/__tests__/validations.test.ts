@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('node-fetch', () => ({ default: vi.fn() }));
 vi.mock('is-url-superb', () => ({ default: vi.fn() }));
@@ -10,25 +10,21 @@ vi.mock('ora', () => {
 vi.mock('consola', () => ({
   consola: { debug: vi.fn(), error: vi.fn(), log: vi.fn(), info: vi.fn() },
 }));
-vi.mock('../blocks.js', () => ({ __esModule: true, getBlocks: vi.fn() }));
+vi.mock('../blocks.js', () => ({
+  getBlocks: vi.fn(),
+  setBlocks: vi.fn(),
+  loadDomainList: vi.fn(),
+  removeBlocks: vi.fn(),
+}));
 
 import isUrl from 'is-url-superb';
 import fetch from 'node-fetch';
-
-let validateEndpoint: any;
-let validateCredentials: any;
-let mockGetBlocks: any;
+import { getBlocks } from '../blocks.js';
+import { validateCredentials, validateEndpoint } from '../validations.js';
 
 const mockFetch = vi.mocked(fetch);
 const mockIsUrl = vi.mocked(isUrl);
-
-beforeAll(async () => {
-  const mods = await Promise.all([import('../blocks.js'), import('../validations.js')]);
-  // set validateEndpoint for the validateEndpoint tests
-  validateEndpoint = mods[1].validateEndpoint;
-  // prepare getBlocks mock reference
-  mockGetBlocks = vi.mocked(mods[0].getBlocks);
-});
+const mockGetBlocks = vi.mocked(getBlocks);
 
 const createMockResponse = (status: number, body: unknown) => ({
   status,
@@ -37,12 +33,12 @@ const createMockResponse = (status: number, body: unknown) => ({
 
 const baseConfig = { endpoint: 'https://mastodon.social', accessToken: 'test-token' };
 
-describe('validateEndpoint', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockIsUrl.mockReturnValue(true);
-  });
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockIsUrl.mockReturnValue(true);
+});
 
+describe('validateEndpoint', () => {
   it('succeeds with a valid v4+ endpoint', async () => {
     const instance = { version: '4.1.0', domain: 'mastodon.social' };
     mockFetch.mockResolvedValue(createMockResponse(200, instance) as never);
@@ -93,16 +89,6 @@ describe('validateEndpoint', () => {
 });
 
 describe('validateCredentials', () => {
-  beforeEach(async () => {
-    vi.clearAllMocks();
-    mockIsUrl.mockReturnValue(true);
-    // import the mocked getBlocks and validations dynamically to ensure vitest mock factories are applied
-    const mods = await Promise.all([import('../blocks.js'), import('../validations.js')]);
-    mockGetBlocks = vi.mocked(mods[0].getBlocks);
-    validateEndpoint = mods[1].validateEndpoint;
-    validateCredentials = mods[1].validateCredentials;
-  });
-
   it('succeeds when getBlocks resolves', async () => {
     mockGetBlocks.mockResolvedValue([] as never);
 

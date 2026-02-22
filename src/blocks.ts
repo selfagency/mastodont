@@ -7,6 +7,36 @@ import { type Block, type MastodontConfig } from './types/index.js';
 
 const BATCH_SIZE = 10;
 
+export const loadDomainList = async (source: string): Promise<string[]> => {
+  let raw: string;
+
+  if (isUrl(source)) {
+    raw = await (await fetch(source)).text();
+  } else {
+    raw = await readFile(source, 'utf8');
+  }
+
+  const ext = source.split('?')[0]!.toLowerCase();
+
+  if (ext.endsWith('.json')) {
+    const parsed = JSON.parse(raw) as string[];
+    return parsed.map(d => d.trim()).filter(d => d.length > 0);
+  }
+
+  if (ext.endsWith('.csv')) {
+    return raw
+      .split(/\r?\n/)
+      .map(line => line.split(',')[0]!.trim())
+      .filter((d, i) => d.length > 0 && !(i === 0 && d.toLowerCase() === 'domain'));
+  }
+
+  // Default: plain text, one domain per line
+  return raw
+    .split(/\r?\n/)
+    .map(d => d.trim())
+    .filter(d => d.length > 0);
+};
+
 const apiEndpoint = (config: MastodontConfig) => `${config.endpoint}/api/v1/admin/domain_blocks`;
 
 const authHeaders = (config: MastodontConfig) => ({
@@ -89,22 +119,27 @@ export const setBlocks = async (config: MastodontConfig) => {
       throw new Error('No blocklist specified.');
     }
 
-    if (isUrl(config.blocklist)) {
-      blocklist = (await (await fetch(config.blocklist)).text()).split(/\r?\n/);
-    } else {
-      blocklist = (await readFile(config.blocklist, 'utf8')).split('\n');
-    }
+    blocklist = await loadDomainList(config.blocklist);
   } catch (e) {
     spinner.fail();
     consola.error(`Failed to load blocklist: ${(e as Error).message}`);
     process.exit(1);
   }
 
-  // Filter out empty lines and whitespace-only entries
-  blocklist = blocklist.map(d => d.trim()).filter(d => d.length > 0);
+  let allowedDomains = new Set<string>();
+  if (config.allowlist) {
+    try {
+      const allowlist = await loadDomainList(config.allowlist);
+      allowedDomains = new Set(allowlist);
+    } catch (e) {
+      spinner.fail();
+      consola.error(`Failed to load allowlist: ${(e as Error).message}`);
+      process.exit(1);
+    }
+  }
 
   const currentDomains = new Set(currentBlocks.map(block => block.domain));
-  const blocksToAdd = blocklist.filter(domain => !currentDomains.has(domain));
+  const blocksToAdd = blocklist.filter(domain => !currentDomains.has(domain) && !allowedDomains.has(domain));
 
   if (blocksToAdd.length === 0) {
     spinner.succeed('No new domains to block.');
@@ -173,5 +208,70 @@ export const setBlocks = async (config: MastodontConfig) => {
     spinner.warn(`Completed with errors: ${succeeded} succeeded, ${failed} failed.`);
   } else {
     spinner.succeed(`Successfully blocked ${succeeded} domains.`);
+  }
+};
+
+export const removeBlocks = async (config: MastodontConfig) => {
+  const currentBlocks = await getBlocks(config, false);
+  const spinner = ora('Removing domain blocks.').start();
+
+  let domainsToRemove: string[] = [];
+  try {
+    if (!config?.allowlist) {
+      throw new Error('No allowlist specified.');
+    }
+
+    domainsToRemove = await loadDomainList(config.allowlist);
+  } catch (e) {
+    spinner.fail();
+    consola.error(`Failed to load allowlist: ${(e as Error).message}`);
+    process.exit(1);
+  }
+
+  const domainSet = new Set(domainsToRemove);
+  const blocksToRemove = currentBlocks.filter(block => domainSet.has(block.domain));
+
+  if (blocksToRemove.length === 0) {
+    spinner.succeed('No matching domain blocks to remove.');
+    return;
+  }
+
+  const url = apiEndpoint(config);
+  let succeeded = 0;
+  let failed = 0;
+
+  for (let i = 0; i < blocksToRemove.length; i += BATCH_SIZE) {
+    const batch = blocksToRemove.slice(i, i + BATCH_SIZE);
+
+    const batchPromises = batch.map(block =>
+      fetch(`${url}/${block.id}`, {
+        method: 'DELETE',
+        headers: authHeaders(config),
+      }),
+    );
+
+    try {
+      const results = await Promise.all(batchPromises);
+      for (const res of results) {
+        if (res.status >= 200 && res.status < 300) {
+          succeeded++;
+        } else {
+          failed++;
+          consola.debug(`Failed to remove block: HTTP ${res.status}`);
+        }
+      }
+    } catch (e) {
+      spinner.fail();
+      consola.error(`Error removing blocks: ${(e as Error).message}`);
+      process.exit(1);
+    }
+
+    spinner.text = `Removing domain blocks. (${Math.min(i + BATCH_SIZE, blocksToRemove.length)}/${blocksToRemove.length})`;
+  }
+
+  if (failed > 0) {
+    spinner.warn(`Completed with errors: ${succeeded} succeeded, ${failed} failed.`);
+  } else {
+    spinner.succeed(`Successfully removed ${succeeded} domain blocks.`);
   }
 };

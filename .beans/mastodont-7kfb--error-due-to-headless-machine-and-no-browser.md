@@ -1,11 +1,11 @@
 ---
 # mastodont-7kfb
 title: Error due to headless machine and no browser
-status: in-progress
+status: completed
 type: bug
 priority: high
 created_at: 2026-02-22T06:46:02Z
-updated_at: 2026-02-22T18:26:52Z
+updated_at: 2026-02-22T18:32:37Z
 ---
 
 ℹ Opening browser to instance blocklist... 22:10:36
@@ -29,12 +29,3 @@ spawnargs: [ 'https:///admin/instances?limited=1' ]
 }
 
 There is no GUI on this machine, the app does not handle that cleanly
-
-
-## Branch
-fix/mastodont-7kfb-headless-browser-error
-
-## Todo
-- [x] Write failing test for browser open error handling
-- [x] Implement graceful error handling for open() in index.ts
-- [x] Verify all tests pass

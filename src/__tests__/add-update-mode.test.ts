@@ -68,4 +68,45 @@ describe('add update mode: domain_blocks integration', () => {
     expect(params.get('private_comment')).toBe('[import-mastodont] private');
     expect(params.get('public_comment')).toBe('public');
   });
+
+  it('PATCHes existing blocks when update=true', async () => {
+    // Arrange: initial GET returns one existing block with id '42'
+    mockFetch.mockResolvedValueOnce({
+      status: 200,
+      json: () => Promise.resolve([{ id: '42', domain: 'example.com' }]),
+      text: () => Promise.resolve(JSON.stringify([{ id: '42', domain: 'example.com' }])),
+      headers: { get: (_: string) => null },
+    } as any);
+
+    tmpFile = path.join(os.tmpdir(), `mastodont-test-${Date.now()}.txt`);
+    await fs.writeFile(tmpFile, 'example.com\n');
+
+    // PATCH response
+    mockFetch.mockResolvedValue({ status: 200 } as any);
+
+    const config = {
+      endpoint: 'http://example.test',
+      accessToken: 'token',
+      blocklist: tmpFile,
+      update: true,
+      severity: 'suspend', // ensure skip of reject_media/reject_reports branch
+      obfuscate: false,
+      privateComment: '',
+    } as any;
+
+    // Act
+    await blocks.setBlocks(config);
+
+    // Assert: find a PATCH call to the specific block id
+    const patchCall = mockFetch.mock.calls.find((c: any) => c[1]?.method === 'PATCH');
+    expect(patchCall).toBeDefined();
+
+    const [url, options] = patchCall as any;
+    expect(url).toBe('http://example.test/api/v1/admin/domain_blocks/42');
+    expect(options.headers.Authorization).toBe('Bearer token');
+    const params = new URLSearchParams(options.body);
+    expect(params.get('domain')).toBe('example.com');
+    // severity should be 'suspend' per config
+    expect(params.get('severity')).toBe('suspend');
+  });
 });

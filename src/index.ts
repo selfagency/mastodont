@@ -1,46 +1,46 @@
-import { consola } from 'consola'
-import { getConfig, resetConfig, setConfig } from './config'
-import { args } from './args'
-import { validateCredentials, validateEndpoint } from './validations'
-import { setBlocks } from './blocks'
-import { header } from './header'
-import open from 'open'
+import { consola } from 'consola';
+import open from 'open';
+import { args } from './args.js';
+import { setBlocks } from './blocks.js';
+import { getConfig, resetConfig, setConfig } from './config.js';
+import { header } from './header.js';
+import { validateCredentials, validateEndpoint } from './validations.js';
 
 const main = async (): Promise<void> => {
-  consola.log(header)
+  consola.log(header);
 
   // check if flags are set
-  const flags = await args()
+  const flags = await args();
 
   if (flags) {
     // reset config
     if (flags?.reset) {
-      await resetConfig()
+      await resetConfig();
     }
 
     // get config
-    const config = await getConfig(flags)
+    const config = await getConfig(flags);
 
     // validate config
-    const instance = await validateEndpoint(config)
+    const instance = await validateEndpoint(config);
 
     // validate credentials
-    await validateCredentials(config)
+    await validateCredentials(config);
 
     // save config to yml
     if (instance && config?.save) {
-      await setConfig(config)
+      await setConfig(config);
     }
 
     // process blocklist
-    await setBlocks(config)
+    await setBlocks(config);
 
     // open browser
     if (!flags.nonInteractive) {
-      consola.info('Opening browser to instance blocklist...')
-      await open(`${config.endpoint}/admin/instances?limited=1`)
+      consola.info('Opening browser to instance blocklist...');
+      await open(`${config.endpoint}/admin/instances?limited=1`);
     }
   }
-}
+};
 
-main().catch(e => consola.error((e as Error).message))
+main().catch(e => consola.error((e as Error).message));

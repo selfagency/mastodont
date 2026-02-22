@@ -9,7 +9,7 @@ export const header = `
     88    \`888'    88 88,    ,88 aa    ]8I   88,  "8a,   ,a8" "8a,   ,d88 "8a,   ,a8" 88       88  88,
     88     \`8'     88 \`"8bbdP"Y8 \`"YbbdP"'   "Y888 \`"YbbdP"'   \`"8bbdP"Y8  \`"YbbdP"'  88       88  "Y888
 
-            Blocklist importer for Mastodon by @selfagency@kibitz.cloud (https://kibitz.cloud)
+                           Blocklist importer for Mastodon by selfagency@social.lol
 Requires an API access token with \`admin:read:domain_blocks\`/\`admin:write:domain_blocks\` and a blocklist file.
                                        See README.md for more info.
 

@@ -1,1 +1,2 @@
-pnpx lint-staged
+#!/bin/sh
+#./node_modules/.bin/lint-staged

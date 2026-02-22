@@ -7,6 +7,49 @@ import { type Block, type MastodontConfig } from './types/index.js';
 
 const BATCH_SIZE = 10;
 
+type FetchResponse = {
+  status: number;
+};
+
+const processBatches = async <T>(
+  items: T[],
+  batchSize: number,
+  spinner: ReturnType<typeof ora>,
+  baseText: string,
+  handler: (batch: T[]) => Promise<FetchResponse[]>,
+  opts?: { treat422AsSkip?: boolean },
+) => {
+  let succeeded = 0;
+  let failed = 0;
+
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+
+    try {
+      const results = await handler(batch);
+      for (const res of results) {
+        if (res.status >= 200 && res.status < 300) {
+          succeeded++;
+        } else if (opts?.treat422AsSkip && res.status === 422) {
+          // skip silently
+          consola.debug(`Domain already blocked (422), skipping`);
+        } else {
+          failed++;
+          consola.debug(`${baseText} failed: HTTP ${res.status}`);
+        }
+      }
+    } catch (e) {
+      spinner.fail();
+      consola.error(`${baseText} error: ${(e as Error).message}`);
+      process.exit(1);
+    }
+
+    spinner.text = `${baseText} (${Math.min(i + batchSize, items.length)}/${items.length})`;
+  }
+
+  return { succeeded, failed };
+};
+
 export const loadDomainList = async (source: string): Promise<string[]> => {
   let raw: string;
 
@@ -140,74 +183,98 @@ export const setBlocks = async (config: MastodontConfig) => {
 
   const currentDomains = new Set(currentBlocks.map(block => block.domain));
   const blocksToAdd = blocklist.filter(domain => !currentDomains.has(domain) && !allowedDomains.has(domain));
-
-  if (blocksToAdd.length === 0) {
-    spinner.succeed('No new domains to block.');
-    process.exit(0);
-  }
+  const blocksToUpdate = currentBlocks.filter(
+    block => blocklist.includes(block.domain) && !allowedDomains.has(block.domain),
+  );
 
   const url = apiEndpoint(config);
   let succeeded = 0;
   let failed = 0;
 
-  for (let i = 0; i < blocksToAdd.length; i += BATCH_SIZE) {
-    const batch = blocksToAdd.slice(i, i + BATCH_SIZE);
+  // If there is nothing to add or update, exit early
+  if (blocksToAdd.length === 0 && !(config.update && blocksToUpdate.length > 0)) {
+    spinner.succeed('No new domains to block.');
+    process.exit(0);
+  }
 
-    const batchPromises = batch.map(domain => {
-      const body = new URLSearchParams({
-        domain,
-        severity: config.severity || 'silence',
-        obfuscate: String(config.obfuscate || false),
-      });
-
-      if (config.severity !== 'suspend') {
-        body.set('reject_media', String(config.rejectMedia || false));
-        body.set('reject_reports', String(config.rejectReports || false));
-      }
-
-      const marker = '[import-mastodont]';
-      body.set('private_comment', config.privateComment ? `${marker} ${config.privateComment}` : marker);
-
-      if (config.publicComment) {
-        body.set('public_comment', config.publicComment);
-      }
-
-      return fetch(url, {
-        method: 'POST',
-        headers: {
-          ...authHeaders(config),
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: body.toString(),
-      });
+  // Helper to build the form body for a given domain
+  const buildBody = (domain: string) => {
+    const body = new URLSearchParams({
+      domain,
+      severity: config.severity || 'silence',
+      obfuscate: String(config.obfuscate || false),
     });
 
-    try {
-      const results = await Promise.all(batchPromises);
-      for (const res of results) {
-        if (res.status >= 200 && res.status < 300) {
-          succeeded++;
-        } else if (res.status === 422) {
-          // Domain already blocked, skip silently
-          consola.debug(`Domain already blocked (422), skipping`);
-        } else {
-          failed++;
-          consola.debug(`Failed to block domain: HTTP ${res.status}`);
-        }
-      }
-    } catch (e) {
-      spinner.fail();
-      consola.error(`Error adding blocks: ${(e as Error).message}`);
-      process.exit(1);
+    if (config.severity !== 'suspend') {
+      body.set('reject_media', String(config.rejectMedia || false));
+      body.set('reject_reports', String(config.rejectReports || false));
     }
 
-    spinner.text = `Updating instance blocks. (${Math.min(i + BATCH_SIZE, blocksToAdd.length)}/${blocksToAdd.length})`;
+    const marker = '[import-mastodont]';
+    body.set('private_comment', config.privateComment ? `${marker} ${config.privateComment}` : marker);
+
+    if (config.publicComment) {
+      body.set('public_comment', config.publicComment);
+    }
+
+    return body;
+  };
+
+  // First: update existing blocks if requested
+  if (config.update && blocksToUpdate.length > 0) {
+    const updateResult = await processBatches(
+      blocksToUpdate,
+      BATCH_SIZE,
+      spinner,
+      'Updating instance blocks (update).',
+      async batch =>
+        Promise.all(
+          batch.map(block =>
+            fetch(`${url}/${block.id}`, {
+              method: 'PATCH',
+              headers: {
+                ...authHeaders(config),
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: buildBody(block.domain).toString(),
+            }),
+          ),
+        ),
+    );
+
+    succeeded += updateResult.succeeded;
+    failed += updateResult.failed;
   }
+
+  // Then: add any new blocks
+  const addResult = await processBatches(
+    blocksToAdd,
+    BATCH_SIZE,
+    spinner,
+    'Updating instance blocks.',
+    async batch =>
+      Promise.all(
+        batch.map(domain =>
+          fetch(url, {
+            method: 'POST',
+            headers: {
+              ...authHeaders(config),
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: buildBody(domain).toString(),
+          }),
+        ),
+      ),
+    { treat422AsSkip: true },
+  );
+
+  succeeded += addResult.succeeded;
+  failed += addResult.failed;
 
   if (failed > 0) {
     spinner.warn(`Completed with errors: ${succeeded} succeeded, ${failed} failed.`);
   } else {
-    spinner.succeed(`Successfully blocked ${succeeded} domains.`);
+    spinner.succeed(`Successfully blocked/updated ${succeeded} domains.`);
   }
 };
 
@@ -240,34 +307,24 @@ export const removeBlocks = async (config: MastodontConfig) => {
   let succeeded = 0;
   let failed = 0;
 
-  for (let i = 0; i < blocksToRemove.length; i += BATCH_SIZE) {
-    const batch = blocksToRemove.slice(i, i + BATCH_SIZE);
+  const removeResult = await processBatches(
+    blocksToRemove,
+    BATCH_SIZE,
+    spinner,
+    'Removing domain blocks.',
+    async batch =>
+      Promise.all(
+        batch.map(block =>
+          fetch(`${url}/${block.id}`, {
+            method: 'DELETE',
+            headers: authHeaders(config),
+          }),
+        ),
+      ),
+  );
 
-    const batchPromises = batch.map(block =>
-      fetch(`${url}/${block.id}`, {
-        method: 'DELETE',
-        headers: authHeaders(config),
-      }),
-    );
-
-    try {
-      const results = await Promise.all(batchPromises);
-      for (const res of results) {
-        if (res.status >= 200 && res.status < 300) {
-          succeeded++;
-        } else {
-          failed++;
-          consola.debug(`Failed to remove block: HTTP ${res.status}`);
-        }
-      }
-    } catch (e) {
-      spinner.fail();
-      consola.error(`Error removing blocks: ${(e as Error).message}`);
-      process.exit(1);
-    }
-
-    spinner.text = `Removing domain blocks. (${Math.min(i + BATCH_SIZE, blocksToRemove.length)}/${blocksToRemove.length})`;
-  }
+  succeeded += removeResult.succeeded;
+  failed += removeResult.failed;
 
   if (failed > 0) {
     spinner.warn(`Completed with errors: ${succeeded} succeeded, ${failed} failed.`);

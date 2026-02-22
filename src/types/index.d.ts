@@ -13,6 +13,7 @@ export interface MastodontArgs {
   reset?: boolean;
   save?: boolean;
   severity?: string;
+  update?: boolean;
 }
 
 export type MastodontConfig = MastodontArgs;

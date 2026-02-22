@@ -33,7 +33,7 @@
     "lint:fix": "oxlint --fix",
     "prepare": "husky",
     "test": "vitest --run",
-    "test:coverage": "vitest --coverage",
+    "test:coverage": "vitest --run  --coverage",
     "tsc:check": "tsc --noEmit"
   },
   "lint-staged": {

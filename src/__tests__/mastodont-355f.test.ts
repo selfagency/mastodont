@@ -3,10 +3,11 @@ import fs from 'fs/promises';
 import os from 'os';
 import path from 'path';
 
-// Create a fetch mock before importing the module under test so the module
-// receives the mocked fetch reference.
-const mockFetch = vi.fn();
-vi.mock('node-fetch', () => ({ default: mockFetch }));
+// Mock node-fetch and then import the mocked fetch for assertions. The vi.mock
+// call is hoisted by Vitest so it must not reference top-level variables.
+vi.mock('node-fetch', () => ({ default: vi.fn() }));
+import fetch from 'node-fetch';
+const mockFetch = vi.mocked(fetch);
 
 import * as blocks from '../blocks.js';
 
@@ -26,7 +27,7 @@ describe('mastodont-355f: domain_blocks integration', () => {
     tmpFile = path.join(os.tmpdir(), `mastodont-test-${Date.now()}.txt`);
     await fs.writeFile(tmpFile, 'example.com\n');
 
-    mockFetch.mockResolvedValue({ status: 201 });
+    mockFetch.mockResolvedValue({ status: 201 } as any);
 
     const config = {
       endpoint: 'http://example.test',

@@ -140,47 +140,94 @@ export const setBlocks = async (config: MastodontConfig) => {
 
   const currentDomains = new Set(currentBlocks.map(block => block.domain));
   const blocksToAdd = blocklist.filter(domain => !currentDomains.has(domain) && !allowedDomains.has(domain));
-
-  if (blocksToAdd.length === 0) {
-    spinner.succeed('No new domains to block.');
-    process.exit(0);
-  }
+  const blocksToUpdate = currentBlocks.filter(
+    block => blocklist.includes(block.domain) && !allowedDomains.has(block.domain),
+  );
 
   const url = apiEndpoint(config);
   let succeeded = 0;
   let failed = 0;
 
+  // If there is nothing to add or update, exit early
+  if (blocksToAdd.length === 0 && !(config.update && blocksToUpdate.length > 0)) {
+    spinner.succeed('No new domains to block.');
+    process.exit(0);
+  }
+
+  // Helper to build the form body for a given domain
+  const buildBody = (domain: string) => {
+    const body = new URLSearchParams({
+      domain,
+      severity: config.severity || 'silence',
+      obfuscate: String(config.obfuscate || false),
+    });
+
+    if (config.severity !== 'suspend') {
+      body.set('reject_media', String(config.rejectMedia || false));
+      body.set('reject_reports', String(config.rejectReports || false));
+    }
+
+    const marker = '[import-mastodont]';
+    body.set('private_comment', config.privateComment ? `${marker} ${config.privateComment}` : marker);
+
+    if (config.publicComment) {
+      body.set('public_comment', config.publicComment);
+    }
+
+    return body;
+  };
+
+  // First: update existing blocks if requested
+  if (config.update) {
+    for (let i = 0; i < blocksToUpdate.length; i += BATCH_SIZE) {
+      const batch = blocksToUpdate.slice(i, i + BATCH_SIZE);
+
+      const batchPromises = batch.map(block => {
+        const body = buildBody(block.domain);
+        return fetch(`${url}/${block.id}`, {
+          method: 'PATCH',
+          headers: {
+            ...authHeaders(config),
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: body.toString(),
+        });
+      });
+
+      try {
+        const results = await Promise.all(batchPromises);
+        for (const res of results) {
+          if (res.status >= 200 && res.status < 300) {
+            succeeded++;
+          } else {
+            failed++;
+            consola.debug(`Failed to update block: HTTP ${res.status}`);
+          }
+        }
+      } catch (e) {
+        spinner.fail();
+        consola.error(`Error updating blocks: ${(e as Error).message}`);
+        process.exit(1);
+      }
+
+      spinner.text = `Updating instance blocks (update). (${Math.min(i + BATCH_SIZE, blocksToUpdate.length)}/${blocksToUpdate.length})`;
+    }
+  }
+
+  // Then: add any new blocks
   for (let i = 0; i < blocksToAdd.length; i += BATCH_SIZE) {
     const batch = blocksToAdd.slice(i, i + BATCH_SIZE);
 
-    const batchPromises = batch.map(domain => {
-      const body = new URLSearchParams({
-        domain,
-        severity: config.severity || 'silence',
-        obfuscate: String(config.obfuscate || false),
-      });
-
-      if (config.severity !== 'suspend') {
-        body.set('reject_media', String(config.rejectMedia || false));
-        body.set('reject_reports', String(config.rejectReports || false));
-      }
-
-      const marker = '[import-mastodont]';
-      body.set('private_comment', config.privateComment ? `${marker} ${config.privateComment}` : marker);
-
-      if (config.publicComment) {
-        body.set('public_comment', config.publicComment);
-      }
-
-      return fetch(url, {
+    const batchPromises = batch.map(domain =>
+      fetch(url, {
         method: 'POST',
         headers: {
           ...authHeaders(config),
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: body.toString(),
-      });
-    });
+        body: buildBody(domain).toString(),
+      }),
+    );
 
     try {
       const results = await Promise.all(batchPromises);
@@ -207,7 +254,7 @@ export const setBlocks = async (config: MastodontConfig) => {
   if (failed > 0) {
     spinner.warn(`Completed with errors: ${succeeded} succeeded, ${failed} failed.`);
   } else {
-    spinner.succeed(`Successfully blocked ${succeeded} domains.`);
+    spinner.succeed(`Successfully blocked/updated ${succeeded} domains.`);
   }
 };
 

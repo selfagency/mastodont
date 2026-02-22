@@ -11,7 +11,7 @@ const mockFetch = vi.mocked(fetch);
 
 import * as blocks from '../blocks.js';
 
-describe('mastodont-355f: domain_blocks integration', () => {
+describe('add update mode: domain_blocks integration', () => {
   let tmpFile = '';
 
   afterEach(async () => {
@@ -21,8 +21,14 @@ describe('mastodont-355f: domain_blocks integration', () => {
   });
 
   it('sends correct POST body according to Mastodon domain_blocks API', async () => {
-    // Arrange: stub current blocks to be empty and create a simple blocklist file
-    vi.spyOn(blocks, 'getBlocks').mockResolvedValue([] as any);
+    // Arrange: ensure the initial GET (getBlocks) returns 200 with an empty
+    // array, then the POST call(s) return 201.
+    mockFetch.mockResolvedValueOnce({
+      status: 200,
+      json: () => Promise.resolve([]),
+      text: () => Promise.resolve('[]'),
+      headers: { get: (_: string) => null },
+    } as any);
 
     tmpFile = path.join(os.tmpdir(), `mastodont-test-${Date.now()}.txt`);
     await fs.writeFile(tmpFile, 'example.com\n');

@@ -1,7 +1,7 @@
 ---
 # mastodont-355f
 title: add update mode
-status: todo
+status: in-progress
 type: feature
 priority: normal
 created_at: 2026-02-22T06:43:23Z

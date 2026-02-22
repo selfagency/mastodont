@@ -1,11 +1,14 @@
 import esbuild from 'esbuild'
 import { clean } from 'esbuild-plugin-clean'
 import copyFilePlugin from 'esbuild-plugin-copy-file'
-import fileloc from 'esbuild-plugin-fileloc'
 
 const banner = `#!/usr/bin/env node
 import {createRequire} from 'module';
+import {fileURLToPath as __fileURLToPath} from 'url';
+import {dirname as __dirname_fn} from 'path';
 const require = createRequire(import.meta.url);
+const __filename = __fileURLToPath(import.meta.url);
+const __dirname = __dirname_fn(__filename);
 `
 
 esbuild
@@ -18,7 +21,6 @@ esbuild
       clean({
         patterns: ['./dist/*']
       }),
-      fileloc.filelocPlugin(),
       copyFilePlugin({
         after: {
           './dist/package.json': './package.json',

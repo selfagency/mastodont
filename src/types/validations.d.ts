@@ -125,5 +125,5 @@ export interface MastodonInstance {
 }
 
 declare namespace validations {
-  export function validateEndpoint(config: MastodontConfig): Promise<MastodonInstanec>
+  export function validateEndpoint(config: MastodontConfig): Promise<MastodonInstance>
 }

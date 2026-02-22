@@ -2,7 +2,7 @@ import { homedir } from 'os'
 import path from 'path'
 import { readFile, unlink, writeFile } from 'fs/promises'
 import { parse as yaml, stringify as yamlStringify } from 'yaml'
-import consola from 'consola'
+import { consola } from 'consola'
 import prompts, { type PromptObject } from 'prompts'
 import ora from 'ora'
 import { MastodontArgs, MastodontConfig } from './types'
@@ -59,13 +59,15 @@ const interactivePrompts = async (config: MastodontConfig, flags: MastodontArgs)
     }
 
     let changed = false
+    const configRecord = config as Record<string, string | boolean | undefined>
+    const flagsRecord = flags as Record<string, string | boolean | undefined>
     for (const key of Object.keys(questions)) {
-      consola.debug(`config.${key}: ${config[key]}, flag.${key}: ${flags[key]}`)
-      if (config[key] === undefined && !flags[key]) {
-        config[key] = (await prompts(questions[key]))?.value
+      consola.debug(`config.${key}: ${configRecord[key]}, flag.${key}: ${flagsRecord[key]}`)
+      if (configRecord[key] === undefined && !flagsRecord[key]) {
+        configRecord[key] = (await prompts(questions[key]))?.value
         changed = true
       } else {
-        config[key] = flags[key] || config[key]
+        configRecord[key] = flagsRecord[key] ?? configRecord[key]
       }
     }
 
@@ -128,7 +130,7 @@ export const getConfig = async (flags: MastodontArgs): Promise<MastodontConfig> 
     try {
       config = yaml(await readFile(flags.config, 'utf-8'))
       spinner.succeed()
-    } catch (e) {
+    } catch (_e) {
       spinner.fail()
       consola.error(`Config file not found at \`${flags.config}\`.`)
       process.exit(1)
@@ -137,7 +139,7 @@ export const getConfig = async (flags: MastodontArgs): Promise<MastodontConfig> 
     try {
       config = yaml(await readFile(defaultConfigPath, 'utf-8'))
       spinner.succeed()
-    } catch (e) {
+    } catch (_e) {
       spinner.stopAndPersist({ text: `Default config file not found.` })
     }
   }
@@ -152,7 +154,7 @@ export const getConfig = async (flags: MastodontArgs): Promise<MastodontConfig> 
   }
 
   const debugConfig = { ...config }
-  debugConfig.accessToken = redact(<string>config.accessToken)
+  debugConfig.accessToken = redact(config.accessToken ?? '')
   consola.debug(`Config: ${JSON.stringify(debugConfig, null, 2)}`)
 
   return config
@@ -161,8 +163,9 @@ export const getConfig = async (flags: MastodontArgs): Promise<MastodontConfig> 
 export const setConfig = async (config: MastodontConfig): Promise<void> => {
   const spinner = ora(`Writing config to \`${defaultConfigPath}\`.`).start()
   try {
-    ['save', 'nonInteractive', 'config', 'blocklist', 'reset', 'publicComment', 'privateComment'].forEach(
-      key => delete config[key]
+    const configRecord = config as Record<string, unknown>
+    ;['save', 'nonInteractive', 'config', 'blocklist', 'reset', 'publicComment', 'privateComment'].forEach(
+      key => delete configRecord[key]
     )
     spinner.stopAndPersist()
     const yamlConfig = yamlStringify(config)
@@ -171,7 +174,7 @@ export const setConfig = async (config: MastodontConfig): Promise<void> => {
     spinner.succeed()
   } catch (e) {
     spinner.fail()
-    throw new Error(`Unable to write config file: ${(<Error>e).message}`)
+    throw new Error(`Unable to write config file: ${(e as Error).message}`)
   }
 }
 
@@ -184,6 +187,6 @@ export const resetConfig = async (): Promise<void> => {
     process.exit(0)
   } catch (e) {
     spinner.fail()
-    throw new Error(`Unable to reset config file: ${(<Error>e).message}`)
+    throw new Error(`Unable to reset config file: ${(e as Error).message}`)
   }
 }

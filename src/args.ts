@@ -1,5 +1,5 @@
 import { type Args, flag, parse, string } from '@thi.ng/args'
-import consola from 'consola'
+import { consola } from 'consola'
 import { type MastodontArgs } from './types'
 
 const specs: Args<MastodontArgs> = {

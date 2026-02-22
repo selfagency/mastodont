@@ -1,6 +1,6 @@
 import isUrl from 'is-url-superb'
 import fetch from 'node-fetch'
-import consola from 'consola'
+import { consola } from 'consola'
 import { getBlocks } from './blocks'
 import { MastodonInstance } from './types/validations'
 import ora from 'ora'
@@ -18,8 +18,9 @@ export const validateEndpoint = async (config: MastodontConfig) => {
       throw new Error('Mastodon server URL is invalid.')
     } else {
       // validate api endpoint exists and uses v4+
-      const instance = <MastodonInstance>await res.json()
-      if (!instance?.version.startsWith('4.')) {
+      const instance = (await res.json()) as MastodonInstance
+      const majorVersion = parseInt(instance?.version?.split('.')[0], 10)
+      if (isNaN(majorVersion) || majorVersion < 4) {
         spinner.fail()
         throw new Error('Mastodon version 4 or higher required.')
       } else {
@@ -36,7 +37,7 @@ export const validateCredentials = async (config: MastodontConfig) => {
   try {
     await getBlocks(config, true)
     spinner.succeed()
-  } catch (e) {
+  } catch (_e) {
     spinner.fail()
     throw new Error('Failed to authenticate to API. Access token is likely invalid.')
   }

@@ -1,4 +1,4 @@
-import consola from 'consola'
+import { consola } from 'consola'
 import { getConfig, resetConfig, setConfig } from './config'
 import { args } from './args'
 import { validateCredentials, validateEndpoint } from './validations'
@@ -43,4 +43,4 @@ const main = async (): Promise<void> => {
   }
 }
 
-main().catch(e => consola.error(<Error>e.message))
+main().catch(e => consola.error((e as Error).message))

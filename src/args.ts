@@ -8,6 +8,11 @@ const specs: Args<MastodontArgs> = {
     hint: 'TOKEN',
     desc: 'Mastodon Access Token',
   }),
+  allowlist: string({
+    alias: 'a',
+    hint: 'LOCATION',
+    desc: 'Allowlist filepath or URL — removes matching blocks or skips them during import',
+  }),
   blocklist: string({
     alias: 'b',
     hint: 'LOCATION',

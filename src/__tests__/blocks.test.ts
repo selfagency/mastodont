@@ -22,7 +22,7 @@ vi.mock('consola', () => ({
 import fetch from 'node-fetch';
 import { readFile } from 'fs/promises';
 import isUrl from 'is-url-superb';
-import { getBlocks, setBlocks } from '../blocks.js';
+import { getBlocks, setBlocks, loadDomainList, removeBlocks } from '../blocks.js';
 import type { Block, MastodontConfig } from '../types/index.js';
 
 const mockFetch = vi.mocked(fetch);
@@ -394,5 +394,198 @@ describe('setBlocks', () => {
     expect(postCalls).toHaveLength(1);
     const body = new URLSearchParams(postCalls[0]![1]!.body as string);
     expect(body.get('private_comment')).toBe('[import-mastodont]');
+  });
+
+  it('skips domains present in the allowlist when adding blocks', async () => {
+    const config: MastodontConfig = {
+      ...baseConfig,
+      blocklist: '/path/to/blocklist.txt',
+      allowlist: '/path/to/allowlist.txt',
+    };
+
+    mockFetch
+      .mockResolvedValueOnce(createMockResponse(200, [], null) as never)
+      .mockResolvedValue(createMockResponse(200, {}) as never);
+
+    mockIsUrl.mockReturnValue(false);
+    // blocklist file read first, then allowlist file
+    mockReadFile
+      .mockResolvedValueOnce('blocked.example\nallowed.example\n' as never)
+      .mockResolvedValueOnce('allowed.example\n' as never);
+
+    await setBlocks(config);
+
+    const postCalls = mockFetch.mock.calls.filter(([, opts]) => {
+      const options = opts as { method?: string } | undefined;
+      return options?.method === 'POST';
+    });
+
+    expect(postCalls).toHaveLength(1);
+    const body = new URLSearchParams(postCalls[0]![1]!.body as string);
+    expect(body.get('domain')).toBe('blocked.example');
+  });
+});
+
+describe('loadDomainList', () => {
+  it('loads domains from a newline-separated .txt file', async () => {
+    mockIsUrl.mockReturnValue(false);
+    mockReadFile.mockResolvedValueOnce('evil.example\nspam.example\n' as never);
+
+    const domains = await loadDomainList('/path/to/list.txt');
+
+    expect(domains).toEqual(['evil.example', 'spam.example']);
+  });
+
+  it('loads domains from a JSON array file', async () => {
+    mockIsUrl.mockReturnValue(false);
+    mockReadFile.mockResolvedValueOnce('["json.example", "another.example"]' as never);
+
+    const domains = await loadDomainList('/path/to/list.json');
+
+    expect(domains).toEqual(['json.example', 'another.example']);
+  });
+
+  it('loads first-column domains from a CSV file', async () => {
+    mockIsUrl.mockReturnValue(false);
+    mockReadFile.mockResolvedValueOnce('domain,reason\ncsv.example,spam\nother.example,abuse\n' as never);
+
+    const domains = await loadDomainList('/path/to/list.csv');
+
+    expect(domains).toEqual(['csv.example', 'other.example']);
+  });
+
+  it('strips a CSV header row when first cell is "domain"', async () => {
+    mockIsUrl.mockReturnValue(false);
+    mockReadFile.mockResolvedValueOnce('domain,notes\ncsv.example,spam\n' as never);
+
+    const domains = await loadDomainList('/path/to/list.csv');
+
+    expect(domains).not.toContain('domain');
+    expect(domains).toEqual(['csv.example']);
+  });
+
+  it('fetches a remote URL and parses the result as a txt list', async () => {
+    mockIsUrl.mockReturnValue(true);
+    mockFetch.mockResolvedValueOnce(createMockResponse(200, 'remote.example\nother.example\n') as never);
+
+    const domains = await loadDomainList('https://lists.example/domains.txt');
+
+    expect(domains).toEqual(['remote.example', 'other.example']);
+  });
+
+  it('filters out empty lines and whitespace-only entries', async () => {
+    mockIsUrl.mockReturnValue(false);
+    mockReadFile.mockResolvedValueOnce('good.example\n\n   \nbad.example\n' as never);
+
+    const domains = await loadDomainList('/path/to/list.txt');
+
+    expect(domains).toEqual(['good.example', 'bad.example']);
+  });
+});
+
+describe('removeBlocks', () => {
+  it('calls process.exit(1) when no allowlist is specified', async () => {
+    const config: MastodontConfig = { ...baseConfig };
+
+    mockFetch.mockResolvedValueOnce(createMockResponse(200, [], null) as never);
+
+    try {
+      await removeBlocks(config);
+    } catch (err) {
+      expect((err as Error).message).toBe('process.exit');
+    }
+
+    expect(process.exit).toHaveBeenCalledWith(1);
+  });
+
+  it('sends DELETE requests for domains that match existing blocks', async () => {
+    const config: MastodontConfig = {
+      ...baseConfig,
+      allowlist: '/path/to/removals.txt',
+    };
+
+    const existingBlocks = [
+      { ...createBlock('remove.example'), id: '42' },
+      { ...createBlock('keep.example'), id: '99' },
+    ];
+
+    mockFetch
+      .mockResolvedValueOnce(createMockResponse(200, existingBlocks, null) as never)
+      .mockResolvedValue(createMockResponse(200, {}) as never);
+
+    mockIsUrl.mockReturnValue(false);
+    mockReadFile.mockResolvedValueOnce('remove.example\n' as never);
+
+    await removeBlocks(config);
+
+    const deleteCalls = mockFetch.mock.calls.filter(([, opts]) => {
+      const options = opts as { method?: string } | undefined;
+      return options?.method === 'DELETE';
+    });
+
+    expect(deleteCalls).toHaveLength(1);
+    expect(deleteCalls[0]![0]).toBe('https://mastodon.example/api/v1/admin/domain_blocks/42');
+  });
+
+  it('sends no DELETE requests when no allowlist domains match current blocks', async () => {
+    const config: MastodontConfig = {
+      ...baseConfig,
+      allowlist: '/path/to/removals.txt',
+    };
+
+    mockFetch.mockResolvedValueOnce(createMockResponse(200, [createBlock('unrelated.example')], null) as never);
+
+    mockIsUrl.mockReturnValue(false);
+    mockReadFile.mockResolvedValueOnce('notblocked.example\n' as never);
+
+    await removeBlocks(config);
+
+    const deleteCalls = mockFetch.mock.calls.filter(([, opts]) => {
+      const options = opts as { method?: string } | undefined;
+      return options?.method === 'DELETE';
+    });
+
+    expect(deleteCalls).toHaveLength(0);
+  });
+
+  it('reports the count of successfully removed blocks', async () => {
+    const config: MastodontConfig = {
+      ...baseConfig,
+      allowlist: '/path/to/removals.txt',
+    };
+
+    mockFetch
+      .mockResolvedValueOnce(createMockResponse(200, [{ ...createBlock('a.example'), id: '1' }], null) as never)
+      .mockResolvedValue(createMockResponse(200, {}) as never);
+
+    mockIsUrl.mockReturnValue(false);
+    mockReadFile.mockResolvedValueOnce('a.example\n' as never);
+
+    const ora = (await import('ora')).default;
+
+    await removeBlocks(config);
+
+    const spinner = ora('');
+    expect(spinner.succeed).toHaveBeenCalledWith(expect.stringContaining('1'));
+  });
+
+  it('reports failures when DELETE requests return non-success status', async () => {
+    const config: MastodontConfig = {
+      ...baseConfig,
+      allowlist: '/path/to/removals.txt',
+    };
+
+    mockFetch
+      .mockResolvedValueOnce(createMockResponse(200, [{ ...createBlock('bad.example'), id: '77' }], null) as never)
+      .mockResolvedValue(createMockResponse(500, { error: 'server error' }) as never);
+
+    mockIsUrl.mockReturnValue(false);
+    mockReadFile.mockResolvedValueOnce('bad.example\n' as never);
+
+    await removeBlocks(config);
+
+    const ora = (await import('ora')).default;
+    const spinner = ora('');
+    expect(spinner.warn).toHaveBeenCalledWith(expect.stringContaining('failed'));
   });
 });

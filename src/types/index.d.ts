@@ -5,6 +5,7 @@ export interface MastodontArgs {
   publicComment?: string;
   rejectMedia?: boolean;
   rejectReports?: boolean;
+  allowlist?: string;
   blocklist?: string;
   config?: string;
   endpoint?: string;

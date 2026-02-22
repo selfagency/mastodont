@@ -367,7 +367,32 @@ describe('setBlocks', () => {
 
     expect(postCalls).toHaveLength(1);
     const body = new URLSearchParams(postCalls[0]![1]!.body as string);
-    expect(body.get('private_comment')).toBe('Internal note');
+    expect(body.get('private_comment')).toBe('[import-mastodont] Internal note');
     expect(body.get('public_comment')).toBe('Public reason');
+  });
+
+  it('sets private_comment to [import-mastodont] when no privateComment provided', async () => {
+    const config: MastodontConfig = {
+      ...baseConfig,
+      blocklist: '/path/to/blocklist.txt',
+    };
+
+    mockFetch
+      .mockResolvedValueOnce(createMockResponse(200, [], null) as never)
+      .mockResolvedValue(createMockResponse(200, {}) as never);
+
+    mockIsUrl.mockReturnValue(false);
+    mockReadFile.mockResolvedValueOnce('marker.example\n' as never);
+
+    await setBlocks(config);
+
+    const postCalls = mockFetch.mock.calls.filter(([, opts]) => {
+      const options = opts as { method?: string } | undefined;
+      return options?.method === 'POST';
+    });
+
+    expect(postCalls).toHaveLength(1);
+    const body = new URLSearchParams(postCalls[0]![1]!.body as string);
+    expect(body.get('private_comment')).toBe('[import-mastodont]');
   });
 });

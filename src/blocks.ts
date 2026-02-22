@@ -130,9 +130,8 @@ export const setBlocks = async (config: MastodontConfig) => {
         body.set('reject_reports', String(config.rejectReports || false));
       }
 
-      if (config.privateComment) {
-        body.set('private_comment', config.privateComment);
-      }
+      const marker = '[import-mastodont]';
+      body.set('private_comment', config.privateComment ? `${marker} ${config.privateComment}` : marker);
 
       if (config.publicComment) {
         body.set('public_comment', config.publicComment);

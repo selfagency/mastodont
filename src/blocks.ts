@@ -76,7 +76,10 @@ export const loadDomainList = async (source: string): Promise<string[]> => {
         // Prefer a `domain` column when present, otherwise take the first column value
         if ('domain' in rec) return (rec.domain ?? '').trim();
         const keys = Object.keys(rec);
-        if (keys.length > 0) return (rec[keys[0]] ?? '').trim();
+        if (keys.length > 0) {
+          const firstKey = keys[0]!; // keys.length > 0 ensures this is defined
+          return (rec[firstKey] ?? '').trim();
+        }
         return '';
       })
       .filter((d, i) => d.length > 0 && !(i === 0 && d.toLowerCase() === 'domain'));

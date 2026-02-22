@@ -13,7 +13,9 @@
       "Bash(npx eslint:*)",
       "Bash(git -C /Users/daniel/Developer/mastodont add esbuild.js eslint.config.js src/args.ts src/blocks.ts src/config.ts src/index.ts src/types/validations.d.ts src/validations.ts tsconfig.json dist/args.js dist/blocks.js dist/config.js dist/index.js)",
       "Bash(gh pr create:*)",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "Bash(beans show:*)",
+      "Bash(beans update:*)"
     ]
   }
 }

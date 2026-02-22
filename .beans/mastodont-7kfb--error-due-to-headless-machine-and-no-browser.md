@@ -1,11 +1,11 @@
 ---
 # mastodont-7kfb
 title: Error due to headless machine and no browser
-status: todo
+status: in-progress
 type: bug
 priority: high
 created_at: 2026-02-22T06:46:02Z
-updated_at: 2026-02-22T06:52:01Z
+updated_at: 2026-02-22T18:23:22Z
 ---
 
 ℹ Opening browser to instance blocklist... 22:10:36

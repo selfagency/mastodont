@@ -38,9 +38,9 @@
   },
   "lint-staged": {
     "src/**/*.ts": [
-      "npm tsc:check --types node --esModuleInterop --target esnext --module nodenext",
-      "npm lint:fix",
-      "npm format"
+      "pnpm run tsc:check --types node --esModuleInterop --target esnext --module nodenext",
+      "pnpm run lint:fix",
+      "pnpm run format"
     ]
   },
   "devDependencies": {

@@ -15,7 +15,10 @@
       "Bash(gh pr create:*)",
       "Bash(npx vitest:*)",
       "Bash(beans show:*)",
-      "Bash(beans update:*)"
+      "Bash(beans update:*)",
+      "Bash(git stash:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

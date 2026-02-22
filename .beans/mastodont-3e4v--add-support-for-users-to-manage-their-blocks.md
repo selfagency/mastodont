@@ -1,9 +1,10 @@
 ---
 # mastodont-3e4v
 title: add support for users to manage their blocks
-status: draft
+status: todo
 type: feature
+priority: normal
 created_at: 2026-02-22T22:15:13Z
-updated_at: 2026-02-22T22:15:13Z
+updated_at: 2026-02-22T23:09:26Z
 ---
 

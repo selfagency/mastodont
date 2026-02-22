@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git checkout:*)",
+      "Bash(npx tsc:*)",
+      "WebFetch(domain:docs.joinmastodon.org)",
+      "Bash(node /Users/daniel/Developer/mastodont/esbuild.js:*)",
+      "Bash(git -C /Users/daniel/Developer/mastodont status)",
+      "Bash(git -C /Users/daniel/Developer/mastodont diff)",
+      "Bash(git -C /Users/daniel/Developer/mastodont log --oneline -5)",
+      "Bash(git -C /Users/daniel/Developer/mastodont add esbuild.js src/args.ts src/blocks.ts src/config.ts src/index.ts src/types/validations.d.ts src/validations.ts tsconfig.json dist/args.js dist/blocks.js dist/config.js dist/index.js)",
+      "Bash(git -C:*)",
+      "Bash(npx eslint:*)",
+      "Bash(git -C /Users/daniel/Developer/mastodont add esbuild.js eslint.config.js src/args.ts src/blocks.ts src/config.ts src/index.ts src/types/validations.d.ts src/validations.ts tsconfig.json dist/args.js dist/blocks.js dist/config.js dist/index.js)",
+      "Bash(gh pr create:*)",
+      "Bash(npx vitest:*)"
+    ]
+  }
+}

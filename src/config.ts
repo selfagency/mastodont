@@ -1,14 +1,14 @@
-import { homedir } from 'os'
-import path from 'path'
-import { readFile, unlink, writeFile } from 'fs/promises'
-import { parse as yaml, stringify as yamlStringify } from 'yaml'
-import consola from 'consola'
-import prompts, { type PromptObject } from 'prompts'
-import ora from 'ora'
-import { MastodontArgs, MastodontConfig } from './types'
+import { consola } from 'consola';
+import { readFile, unlink, writeFile } from 'node:fs/promises';
+import { homedir } from 'node:os';
+import * as path from 'node:path';
+import ora from 'ora';
+import prompts, { type PromptObject } from 'prompts';
+import { parse as yaml, stringify as yamlStringify } from 'yaml';
+import type { MastodontArgs, MastodontConfig } from './types/index.js';
 
-const defaultConfigPath = path.join(homedir(), '.mastodont.yml')
-const redact = (str: string) => str.replace(/./g, '*')
+const defaultConfigPath = path.join(homedir(), '.mastodont.yml');
+const redact = (str: string) => str.replace(/./g, '*');
 
 const interactivePrompts = async (config: MastodontConfig, flags: MastodontArgs): Promise<MastodontConfig> => {
   try {
@@ -17,31 +17,31 @@ const interactivePrompts = async (config: MastodontConfig, flags: MastodontArgs)
         type: 'text',
         name: 'value',
         initial: config.endpoint || '',
-        message: 'Mastodon server URL:'
+        message: 'Mastodon server URL:',
       },
       accessToken: {
         type: 'password',
         name: 'value',
         initial: config.accessToken || '',
-        message: 'Mastodon access token:'
+        message: 'Mastodon access token:',
       },
       rejectMedia: {
         type: 'confirm',
         name: 'value',
         initial: config.rejectMedia || false,
-        message: 'Reject media from imported domains?'
+        message: 'Reject media from imported domains?',
       },
       rejectReports: {
         type: 'confirm',
         name: 'value',
         initial: config.rejectReports || false,
-        message: 'Reject reports from imported domains?'
+        message: 'Reject reports from imported domains?',
       },
       obfuscate: {
         type: 'confirm',
         name: 'value',
         initial: config.obfuscate || false,
-        message: 'Obfuscate domains in public blocklist?'
+        message: 'Obfuscate domains in public blocklist?',
       },
       severity: {
         type: 'select',
@@ -51,21 +51,23 @@ const interactivePrompts = async (config: MastodontConfig, flags: MastodontArgs)
           { title: 'suspend', value: 'suspend' },
           {
             title: 'noop',
-            value: 'noop'
-          }
+            value: 'noop',
+          },
         ],
-        message: 'Block severity:'
-      }
-    }
+        message: 'Block severity:',
+      },
+    };
 
-    let changed = false
+    let changed = false;
+    const configRecord = config as Record<string, string | boolean | undefined>;
+    const flagsRecord = flags as Record<string, string | boolean | undefined>;
     for (const key of Object.keys(questions)) {
-      consola.debug(`config.${key}: ${config[key]}, flag.${key}: ${flags[key]}`)
-      if (config[key] === undefined && !flags[key]) {
-        config[key] = (await prompts(questions[key]))?.value
-        changed = true
+      consola.debug(`config.${key}: ${configRecord[key]}, flag.${key}: ${flagsRecord[key]}`);
+      if (configRecord[key] === undefined && !flagsRecord[key]) {
+        configRecord[key] = (await prompts(questions[key]!))?.value;
+        changed = true;
       } else {
-        config[key] = flags[key] || config[key]
+        configRecord[key] = flagsRecord[key] ?? configRecord[key];
       }
     }
 
@@ -74,9 +76,9 @@ const interactivePrompts = async (config: MastodontConfig, flags: MastodontArgs)
         await prompts({
           type: 'text',
           name: 'value',
-          message: 'Blocklist filepath or URL:'
+          message: 'Blocklist filepath or URL:',
         })
-      )?.value
+      )?.value;
     }
 
     if (!flags.publicComment) {
@@ -85,9 +87,9 @@ const interactivePrompts = async (config: MastodontConfig, flags: MastodontArgs)
           type: 'text',
           name: 'value',
           initial: '',
-          message: 'Public comment:'
+          message: 'Public comment:',
         })
-      )?.value
+      )?.value;
     }
 
     if (!flags.privateComment) {
@@ -96,9 +98,9 @@ const interactivePrompts = async (config: MastodontConfig, flags: MastodontArgs)
           type: 'text',
           name: 'value',
           initial: `Imported by Mastodont on ${new Date().toISOString()}`,
-          message: 'Private comment:'
+          message: 'Private comment:',
         })
-      )?.value
+      )?.value;
     }
 
     if (changed && !flags.save) {
@@ -107,83 +109,84 @@ const interactivePrompts = async (config: MastodontConfig, flags: MastodontArgs)
           type: 'confirm',
           name: 'value',
           initial: false,
-          message: `Save config to ${defaultConfigPath}?`
+          message: `Save config to ${defaultConfigPath}?`,
         })
-      ).value
+      ).value;
     }
 
-    return config
+    return config;
   } catch (e) {
-    consola.error(e)
-    process.exit(1)
+    consola.error(e);
+    process.exit(1);
   }
-}
+};
 
 export const getConfig = async (flags: MastodontArgs): Promise<MastodontConfig> => {
-  const spinner = ora('Loading config.').start()
-  let config: MastodontConfig = {}
+  const spinner = ora('Loading config.').start();
+  let config: MastodontConfig = {};
 
   // check if yml file exists else use default
   if (flags.config) {
     try {
-      config = yaml(await readFile(flags.config, 'utf-8'))
-      spinner.succeed()
-    } catch (e) {
-      spinner.fail()
-      consola.error(`Config file not found at \`${flags.config}\`.`)
-      process.exit(1)
+      config = yaml(await readFile(flags.config, 'utf-8'));
+      spinner.succeed();
+    } catch (_e) {
+      spinner.fail();
+      consola.error(`Config file not found at \`${flags.config}\`.`);
+      process.exit(1);
     }
   } else {
     try {
-      config = yaml(await readFile(defaultConfigPath, 'utf-8'))
-      spinner.succeed()
-    } catch (e) {
-      spinner.stopAndPersist({ text: `Default config file not found.` })
+      config = yaml(await readFile(defaultConfigPath, 'utf-8'));
+      spinner.succeed();
+    } catch (_e) {
+      spinner.stopAndPersist({ text: `Default config file not found.` });
     }
   }
 
   if (!flags.nonInteractive) {
-    spinner.stop()
-    config = await interactivePrompts(config, flags)
+    spinner.stop();
+    config = await interactivePrompts(config, flags);
   }
 
   if (config && (!config.endpoint?.length || !config.accessToken?.length)) {
-    throw new Error('Mastodon server URL and access token are required.')
+    throw new Error('Mastodon server URL and access token are required.');
   }
 
-  const debugConfig = { ...config }
-  debugConfig.accessToken = redact(<string>config.accessToken)
-  consola.debug(`Config: ${JSON.stringify(debugConfig, null, 2)}`)
+  const debugConfig = { ...config };
+  debugConfig.accessToken = redact(config.accessToken ?? '');
+  consola.debug(`Config: ${JSON.stringify(debugConfig, null, 2)}`);
 
-  return config
-}
+  return config;
+};
 
 export const setConfig = async (config: MastodontConfig): Promise<void> => {
-  const spinner = ora(`Writing config to \`${defaultConfigPath}\`.`).start()
+  const spinner = ora(`Writing config to \`${defaultConfigPath}\`.`).start();
   try {
+    const configRecord = config as Record<string, unknown>;
     ['save', 'nonInteractive', 'config', 'blocklist', 'reset', 'publicComment', 'privateComment'].forEach(
-      key => delete config[key]
-    )
-    spinner.stopAndPersist()
-    const yamlConfig = yamlStringify(config)
-    consola.debug(`Writing config:\n${yamlConfig}`)
-    await writeFile(defaultConfigPath, yamlConfig)
-    spinner.succeed()
+      key => delete configRecord[key],
+    );
+    spinner.stopAndPersist();
+    const yamlConfig = yamlStringify(config);
+    consola.debug(`Writing config:\n${yamlConfig}`);
+    await writeFile(defaultConfigPath, yamlConfig);
+    spinner.succeed();
   } catch (e) {
-    spinner.fail()
-    throw new Error(`Unable to write config file: ${(<Error>e).message}`)
+    spinner.fail();
+    throw new Error(`Unable to write config file: ${(e as Error).message}`);
   }
-}
+};
 
 export const resetConfig = async (): Promise<void> => {
-  const spinner = ora(`Resetting config.`).start()
+  const spinner = ora(`Resetting config.`).start();
   try {
-    await unlink(defaultConfigPath)
-    spinner.succeed()
-    consola.debug(`Config file successfully deleted.`)
-    process.exit(0)
+    await unlink(defaultConfigPath);
+    spinner.succeed();
+    consola.debug(`Config file successfully deleted.`);
+    process.exit(0);
   } catch (e) {
-    spinner.fail()
-    throw new Error(`Unable to reset config file: ${(<Error>e).message}`)
+    spinner.fail();
+    throw new Error(`Unable to reset config file: ${(e as Error).message}`);
   }
-}
+};

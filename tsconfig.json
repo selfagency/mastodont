@@ -1,34 +1,33 @@
 {
+  "exclude": [
+    "node_modules/",
+    "dist/"
+  ],
+  "include": [
+    "src/**/*.ts"
+  ],
   "compilerOptions": {
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
-    "emitDecoratorMetadata": true,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "module": "nodenext",
+    "target": "esnext",
+    "lib": [
+      "esnext"
+    ],
+    "types": [
+      "node"
+    ],
     "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "forceConsistentCasingInFileNames": true,
-    "importHelpers": true,
-    "isolatedModules": true,
-    "lib": ["es2020"],
-    "module": "es2020",
-    "moduleResolution": "node",
-    "noImplicitAny": false,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "outDir": "dist",
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
     "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
     "strict": true,
-    "strictNullChecks": true,
-    "target": "es2020",
-    "typeRoots": ["./node_modules/@types", "./src/types"],
-    "types": ["node"]
-  },
-  "exclude": ["node_modules", "dist"],
-  "include": ["src/**/*.ts"],
-  "ts-node": {
-    "esm": true,
-    "experimentalSpecifierResolution": true
+    "jsx": "react-jsx",
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
   }
 }

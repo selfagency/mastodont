@@ -1,5 +1,7 @@
 # Mastodont
 
+[![Tests](https://github.com/selfagency/mastodont/actions/workflows/tests.yml/badge.svg)](https://github.com/selfagency/mastodont/actions/workflows/tests.yml) [![codecov](https://codecov.io/gh/selfagency/mastodont/graph/badge.svg?token=AEtazkDCoJ)](https://codecov.io/gh/selfagency/mastodont)
+
 Mastodont is a CLI tool to import blocklists into Mastodon written in Node.js.
 
 It uses the `/admin/domain_blocks` [endpoint](https://docs.joinmastodon.org/methods/admin/domain_blocks/#create)
